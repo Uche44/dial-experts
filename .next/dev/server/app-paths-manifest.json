@@ -1,0 +1,11 @@
+{
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/(auth)/signup/page": "app/(auth)/signup/page.js",
+  "/(expert)/expert/page": "app/(expert)/expert/page.js",
+  "/(main)/call/[id]/page": "app/(main)/call/[id]/page.js",
+  "/(main)/dashboard/page": "app/(main)/dashboard/page.js",
+  "/(main)/experts/[id]/page": "app/(main)/experts/[id]/page.js",
+  "/(main)/experts/page": "app/(main)/experts/page.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/page": "app/page.js"
+}

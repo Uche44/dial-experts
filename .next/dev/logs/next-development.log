@@ -1,0 +1,541 @@
+[00:00:01.345] Server  LOG      ✓ Ready in 863ms
+[00:00:10.359] Server  LOG      ○ Compiling /signup ...
+[00:00:18.543] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:19.312] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:00:19.312] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/signup","route":"/signup"}
+[00:00:19.312] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/signup color: rgb(120, 120, 120) color: inherit {"dp":"/signup","o":"http://localhost:3000/signup","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765276165493}
+[00:05:23.760] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/experts color: rgb(120, 120, 120) color: inherit {"dp":"/experts","o":"http://localhost:3000/experts","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765276469881}
+[00:12:13.673] Server  WARN     ⚠ Fast Refresh had to perform a full reload when ./lib/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:12:14.172] Server  LOG      ✓ Compiled in 185ms
+[00:12:14.820] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:15.562] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:12:15.562] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/experts","route":"/experts"}
+[00:12:15.562] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/experts color: rgb(120, 120, 120) color: inherit {"dp":"/experts","o":"http://localhost:3000/experts","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765276881687}
+[00:12:17.298] Server  WARN     ⚠ Fast Refresh had to perform a full reload when ./lib/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:12:17.665] Server  LOG      ✓ Compiled in 200ms
+[00:12:18.171] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:19.553] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:12:19.553] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/experts","route":"/experts"}
+[00:12:19.553] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/experts color: rgb(120, 120, 120) color: inherit {"dp":"/experts","o":"http://localhost:3000/experts","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765276884869}
+[00:12:20.348] Server  WARN     ⚠ Fast Refresh had to perform a full reload when ./lib/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:12:20.386] Server  LOG      ✓ Compiled in 124ms
+[00:12:21.270] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:22.555] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:12:22.555] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/experts","route":"/experts"}
+[00:12:22.555] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/experts color: rgb(120, 120, 120) color: inherit {"dp":"/experts","o":"http://localhost:3000/experts","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765276887910}
+[00:12:27.956] Server  WARN     ⚠ Fast Refresh had to perform a full reload when ./lib/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:12:27.973] Server  LOG      ✓ Compiled in 151ms
+[00:12:28.970] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:12:29.549] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:12:29.549] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/experts","route":"/experts"}
+[00:12:29.549] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/experts color: rgb(120, 120, 120) color: inherit {"dp":"/experts","o":"http://localhost:3000/experts","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765276895690}
+[00:12:34.292] Server  LOG      ✓ Compiled in 245ms
+[00:12:34.553] Browser ERROR   ./lib/auth-context.tsx:100:7
+Parsing ecmascript source code failed
+   98 |       //   }
+   99 |       // ),
+> 100 |       });
+      |       ^
+  101 |
+  102 |       if (response.ok) {
+  103 |         const responseData = await response.json();
+
+Expression expected
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth-context.tsx
+    ./app/layout.tsx
+
+  #2 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #3 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #4 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./components/navbar.tsx [Client Component Browser]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+
+  #5 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./components/navbar.tsx [Client Component SSR]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+[00:12:53.549] Browser ERROR   ./lib/auth-context.tsx:100:7
+Parsing ecmascript source code failed
+   98 |       //   }
+   99 |       // ),
+> 100 |       });
+      |       ^
+  101 |
+  102 |       if (response.ok) {
+  103 |         const responseData = await response.json();
+
+Expression expected
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth-context.tsx
+    ./app/layout.tsx
+
+  #2 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #3 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #4 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./components/navbar.tsx [Client Component Browser]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+
+  #5 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./components/navbar.tsx [Client Component SSR]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+[00:13:04.066] Server  LOG      ✓ Compiled in 134ms
+[00:13:04.561] Browser ERROR   ./lib/auth-context.tsx:100:7
+Parsing ecmascript source code failed
+   98 |       //   }
+   99 |       // ),
+> 100 |       });
+      |       ^
+  101 |
+  102 |       if (response.ok) {
+  103 |         const responseData = await response.json();
+
+Expected ',', got '}'
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth-context.tsx
+    ./app/layout.tsx
+
+  #2 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #3 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #4 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./components/navbar.tsx [Client Component Browser]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+
+  #5 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./components/navbar.tsx [Client Component SSR]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+[00:13:06.557] Browser ERROR   ./lib/auth-context.tsx:100:7
+Parsing ecmascript source code failed
+   98 |       //   }
+   99 |       // ),
+> 100 |       });
+      |       ^
+  101 |
+  102 |       if (response.ok) {
+  103 |         const responseData = await response.json();
+
+Expected ',', got '}'
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth-context.tsx
+    ./app/layout.tsx
+
+  #2 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #3 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #4 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./components/navbar.tsx [Client Component Browser]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+
+  #5 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./components/navbar.tsx [Client Component SSR]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+[00:13:09.548] Browser ERROR   ./lib/auth-context.tsx:100:7
+Parsing ecmascript source code failed
+   98 |       //   }
+   99 |       // ),
+> 100 |       });
+      |       ^
+  101 |
+  102 |       if (response.ok) {
+  103 |         const responseData = await response.json();
+
+Expected ',', got '}'
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth-context.tsx
+    ./app/layout.tsx
+
+  #2 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #3 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #4 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./components/navbar.tsx [Client Component Browser]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+
+  #5 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./components/navbar.tsx [Client Component SSR]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+[00:13:24.556] Browser ERROR   ./lib/auth-context.tsx:100:7
+Parsing ecmascript source code failed
+   98 |       //   }
+   99 |       // ),
+> 100 |       }
+      |       ^
+  101 |     );
+  102 |
+  103 |       if (response.ok) {
+
+Expected ',', got '}'
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth-context.tsx
+    ./app/layout.tsx
+
+  #2 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #3 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #4 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./components/navbar.tsx [Client Component Browser]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+
+  #5 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./components/navbar.tsx [Client Component SSR]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+[00:13:28.772] Server  LOG      ✓ Compiled in 126ms
+[00:13:29.556] Browser ERROR   ./lib/auth-context.tsx:101:6
+Parsing ecmascript source code failed
+   99 |       // ),
+  100 |       // }
+> 101 |     );
+      |      ^
+  102 |
+  103 |       if (response.ok) {
+  104 |         const responseData = await response.json();
+
+Expected ',', got ';'
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth-context.tsx
+    ./app/layout.tsx
+
+  #2 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #3 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #4 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./components/navbar.tsx [Client Component Browser]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+
+  #5 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./components/navbar.tsx [Client Component SSR]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+[00:13:43.903] Server  LOG      ✓ Compiled in 119ms
+[00:13:44.552] Browser ERROR   ./lib/auth-context.tsx:100:7
+Parsing ecmascript source code failed
+   98 |       //   }
+   99 |       // ),
+> 100 |       });
+      |       ^
+  101 |
+  102 |       if (response.ok) {
+  103 |         const responseData = await response.json();
+
+Expected ',', got '}'
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth-context.tsx
+    ./app/layout.tsx
+
+  #2 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #3 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #4 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./components/navbar.tsx [Client Component Browser]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+
+  #5 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./components/navbar.tsx [Client Component SSR]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+[00:13:49.655] Server  LOG      ✓ Compiled in 106ms
+[00:13:50.549] Browser ERROR   ./lib/auth-context.tsx:88:11
+Parsing ecmascript source code failed
+  86 |         // headers: { "Content-Type": "application/json" },
+  87 |         body: JSON.stringify(payload
+> 88 |           {
+     |           ^
+  89 |           name: data.name,
+  90 |           email: data.email,
+  91 |           password: data.password,
+
+Expected ',', got '{'
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/auth-context.tsx
+    ./app/layout.tsx
+
+  #2 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Client Component Browser]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #3 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Client Component SSR]
+    ./app/(auth)/signup/page.tsx [Server Component]
+
+  #4 [Client Component Browser]:
+    ./lib/auth-context.tsx [Client Component Browser]
+    ./components/navbar.tsx [Client Component Browser]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+
+  #5 [Client Component SSR]:
+    ./lib/auth-context.tsx [Client Component SSR]
+    ./components/navbar.tsx [Client Component SSR]
+    ./components/navbar.tsx [Server Component]
+    ./app/(auth)/layout.tsx [Server Component]
+[00:13:53.562] Server  WARN     ⚠ Fast Refresh had to perform a full reload when ./lib/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:13:54.238] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:13:55.747] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:13:55.747] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/experts","route":"/experts"}
+[00:13:55.747] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/experts color: rgb(120, 120, 120) color: inherit {"dp":"/experts","o":"http://localhost:3000/experts","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765276980970}
+[00:14:08.712] Server  WARN     ⚠ Fast Refresh had to perform a full reload when ./lib/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:14:08.989] Server  LOG      ✓ Compiled in 123ms
+[00:14:09.350] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:14:10.562] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:14:10.562] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/experts","route":"/experts"}
+[00:14:10.562] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/experts color: rgb(120, 120, 120) color: inherit {"dp":"/experts","o":"http://localhost:3000/experts","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765276996091}
+[00:14:11.460] Server  WARN     ⚠ Fast Refresh had to perform a full reload when ./lib/auth-context.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:14:11.939] Server  LOG      ✓ Compiled in 289ms
+[00:14:12.495] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:14:13.561] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:14:13.561] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/experts","route":"/experts"}
+[00:14:13.561] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/experts color: rgb(120, 120, 120) color: inherit {"dp":"/experts","o":"http://localhost:3000/experts","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765276999470}
+[00:16:46.884] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765277153060}
+[00:32:12.945] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765278081667}
+[00:32:23.818] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765278092535}
+[00:36:41.822] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/call/booking-1 color: rgb(120, 120, 120) color: inherit {"dp":"/call/[id]","o":"http://localhost:3000/call/booking-1","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765278350507}
+[00:37:38.600] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765278407336}
+[00:38:08.606] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/call/booking-1 color: rgb(120, 120, 120) color: inherit {"dp":"/call/[id]","o":"http://localhost:3000/call/booking-1","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765278437348}
+[00:38:10.373] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765278439091}
+[00:38:14.005] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765278442728}
+[00:38:32.852] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/expert color: rgb(120, 120, 120) color: inherit {"dp":"/expert","o":"http://localhost:3000/expert","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765278461401}
+[00:40:43.791] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/login color: rgb(120, 120, 120) color: inherit {"dp":"/login","o":"http://localhost:3000/login","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765278592517}
+[02:10:27.483] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/experts color: rgb(120, 120, 120) color: inherit {"dp":"/experts","o":"http://localhost:3000/experts","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765283976172}
+[02:10:41.284] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/experts/expert-3 color: rgb(120, 120, 120) color: inherit {"dp":"/experts/[id]","o":"http://localhost:3000/experts/expert-3","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765283989999}
+[02:12:07.255] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/dashboard color: rgb(120, 120, 120) color: inherit {"dp":"/dashboard","o":"http://localhost:3000/dashboard","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765284075994}
+[05:59:47.961] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[05:59:48.247] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[05:59:48.247] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[05:59:48.247] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765297736977}
+[06:00:35.077] Server  LOG      ✓ Compiled in 175ms
+[06:00:37.955] Server  LOG      ✓ Compiled in 108ms
+[06:00:42.220] Server  LOG      ✓ Compiled in 104ms
+[06:00:45.969] Server  LOG      ✓ Compiled in 106ms
+[06:00:57.382] Server  LOG      ✓ Compiled in 117ms
+[06:01:02.298] Server  LOG      ✓ Compiled in 94ms
+[06:01:02.576] Browser ERROR   uncaughtError: Error: Failed prop type: The prop `href` expects a `string` or `object` in `<Link>`, but got `undefined` instead.
+Open your browser's console to view the Component stack trace.
+[06:01:05.412] Server  LOG      ✓ Compiled in 184ms
+[06:01:05.550] Browser ERROR   ./components/navbar.tsx:167:39
+Parsing ecmascript source code failed
+  165 |                   className="bg-primary hover:bg-primary/90 glow-primary"
+  166 |                 >
+> 167 |                  Connect Wallet</Link>
+      |                                       ^
+> 168 |                 </Button>
+      | ^^^^^^^^^^^^^^^^^
+  169 |               </>
+  170 |             )}
+  171 |           </div>
+
+Expected '</', got 'jsx text (
+                )'
+
+Import trace:
+  Server Component:
+    ./components/navbar.tsx
+    ./app/(auth)/layout.tsx
+[06:01:09.677] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[06:01:10.884] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[06:01:11.560] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[06:01:11.560] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[06:01:11.561] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765297820036}
+[06:01:21.183] Server  LOG      ✓ Compiled in 91ms
+[06:01:29.271] Server  LOG      ✓ Compiled in 104ms
+[06:01:35.952] Server  LOG      ✓ Compiled in 224ms
+[06:01:47.142] Server  LOG      ✓ Compiled in 105ms
+[06:01:47.556] Browser ERROR   ./components/navbar.tsx:167:40
+Parsing ecmascript source code failed
+  165 |                   className="bg-primary hover:bg-primary/90 glow-primary"
+  166 |                 >
+> 167 |                   Connect wallet</Link>
+      |                                        ^
+> 168 |                 </Button>
+      | ^^^^^^^^^^^^^^^^^
+  169 |               </>
+  170 |             )}
+  171 |           </div>
+
+Expected '</', got 'jsx text (
+                )'
+
+Import trace:
+  Server Component:
+    ./components/navbar.tsx
+    ./app/(auth)/layout.tsx
+[06:01:59.451] Server  LOG      ✓ Compiled in 94ms
+[06:02:07.273] Server  LOG      ✓ Compiled in 122ms
+[06:02:11.570] Server  LOG      ✓ Compiled in 111ms
+[06:02:12.560] Browser ERROR   ./components/navbar.tsx:175:27
+Parsing ecmascript source code failed
+  173 |           {/* Mobile menu button */}
+  174 |           <Button
+> 175 |             variant="ghost"
+      |                           ^
+  176 |             size="icon"
+  177 |             className="md:hidden"
+  178 |             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+
+Unterminated string constant
+
+Import trace:
+  Server Component:
+    ./components/navbar.tsx
+    ./app/(auth)/layout.tsx
+[06:02:16.574] Browser ERROR   uncaughtError: Error: Failed prop type: The prop `href` expects a `string` or `object` in `<Link>`, but got `undefined` instead.
+Open your browser's console to view the Component stack trace.
+[06:02:18.642] Server  LOG      ✓ Compiled in 118ms
+[06:02:19.553] Browser ERROR   ./components/navbar.tsx:175:27
+Parsing ecmascript source code failed
+  173 |           {/* Mobile menu button */}
+  174 |           <Button
+> 175 |             variant="ghost"
+      |                           ^
+  176 |             size="icon"
+  177 |             className="md:hidden"
+  178 |             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+
+Unterminated string constant
+
+Import trace:
+  Server Component:
+    ./components/navbar.tsx
+    ./app/(auth)/layout.tsx
+[06:02:20.980] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[06:02:21.887] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[06:02:22.558] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[06:02:22.558] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/","route":"/"}
+[06:02:22.558] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765297891089}
+[06:02:23.980] Server  LOG      ✓ Compiled in 127ms
+[06:02:31.062] Server  LOG      ✓ Compiled in 133ms
+[06:02:47.663] Server  LOG      ✓ Compiled in 88ms
+[06:02:50.084] Server  LOG      ✓ Compiled in 91ms
+[06:02:51.668] Server  LOG      ✓ Compiled in 145ms
+[06:02:58.417] Server  LOG      ✓ Compiled in 122ms
+[06:02:58.555] Browser ERROR   ./components/navbar.tsx:162:40
+Parsing ecmascript source code failed
+  160 |                 >
+  161 |                   {/* <Link href="">Connect wallet</Link> */}
+> 162 |                   Connect wallet</Link>
+      |                                        ^
+> 163 |                 </Button>
+      | ^^^^^^^^^^^^^^^^^
+  164 |               </>
+  165 |             )}
+  166 |           </div>
+
+Expected '</', got 'jsx text (
+                )'
+
+Import trace:
+  Server Component:
+    ./components/navbar.tsx
+    ./app/(auth)/layout.tsx
+[06:03:11.932] Server  LOG      ✓ Compiled in 117ms
+[06:03:14.892] Server  LOG      ✓ Compiled in 106ms
+[06:03:25.445] Server  LOG      ✓ Compiled in 91ms
+[06:03:52.720] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/signup color: rgb(120, 120, 120) color: inherit {"dp":"/signup","o":"http://localhost:3000/signup","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765297981454}
+[06:04:59.277] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"dp":"/","o":"http://localhost:3000/","sdkn":"@vercel/analytics/next","sdkv":"1.6.1","sv":"0.1.3","ts":1765298048012}
