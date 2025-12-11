@@ -4,32 +4,18 @@ import {
   createContext,
   useContext,
   useState,
-  useCallback,
   type ReactNode,
   useEffect,
+  useCallback,
 } from "react";
-import type { User, UserRole } from "./types";
-import { mockUsers } from "./mock-data";
+import type { User } from "./types";
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string, role?: UserRole) => Promise<boolean>;
-  signup: (data: SignupData) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
-}
-
-interface SignupData {
-  name: string;
-  email: string;
-  password: string;
-  role: UserRole;
-  cv?: File | null;
-  certificate?: File | null;
-  field?: string;
-  bio?: string;
-  ratePerMin?: string;
+  setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,84 +25,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored user on mount
-    const storedUser = localStorage.getItem("dialexperts_user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = useCallback(
-    async (
-      email: string,
-      password: string,
-      role?: UserRole
-    ): Promise<boolean> => {
-      setIsLoading(true);
+    // Fetch user from token on mount
+    async function fetchUser() {
       try {
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, role }),
-        });
-
+        const response = await fetch("/api/auth/me");
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
-          // localStorage.setItem("dialexperts_user", JSON.stringify(data.user));
-          setIsLoading(false);
-          return true;
         }
       } catch (error) {
-        console.error("Login error:", error);
-      }
-
-      setIsLoading(false);
-      return false;
-    },
-    []
-  );
-
-  const signup = useCallback(async (payload: SignupData): Promise<boolean> => {
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        // headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          payload
-          //   {
-          //   name: data.name,
-          //   email: data.email,
-          //   password: data.password,
-          //   role: data.role,
-          //   ...(data.role === "expert" && {
-          //     field: data.field,
-          //     bio: data.bio,
-          //     ratePerMin: data.ratePerMin,
-          //   }),
-          // }
-        ),
-      });
-
-      if (response.ok) {
-        const responseData = await response.json();
-        setUser(responseData.user);
+        console.error("Failed to fetch user:", error);
+      } finally {
         setIsLoading(false);
-        return true;
       }
-    } catch (error) {
-      console.error("Signup error:", error);
     }
 
-    setIsLoading(false);
-    return false;
+    fetchUser();
   }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    localStorage.removeItem("dialexperts_user");
+  const logout = useCallback(async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setUser(null);
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   }, []);
 
   return (
@@ -124,8 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isLoading,
-        login,
-        signup,
+        setUser,
         logout,
         isAuthenticated: !!user,
       }}

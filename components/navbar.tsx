@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { SolanaLogo } from "./solana-logo";
+// import { SolanaLogo } from "./solana-logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,23 +20,30 @@ import {
   BookOpen,
   Receipt,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import { WalletConnectButton } from "./wallet-connect-button";
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
+  const { open } = useAppKit();
+  const { address, isConnected } = useAppKitAccount();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
 
   const getDashboardLink = () => {
-    if (!user) return "/login";
+    if (!user) return "/";
     switch (user.role) {
-      case "admin":
-        return "/admin";
+      // case "admin":
+      //   return "/admin";
       case "expert":
         return "/expert";
       default:
         return "/dashboard";
     }
   };
+
+ 
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
@@ -154,11 +161,10 @@ export function Navbar() {
               </DropdownMenu>
             ) : (
               <>
-                <Button className="bg-primary hover:bg-primary/90 glow-primary">
-                  Connect wallet
-                </Button>
+                <WalletConnectButton />
               </>
             )}
+        
           </div>
 
           {/* Mobile menu button */}
@@ -234,26 +240,12 @@ export function Navbar() {
               ) : (
                 <div className="flex flex-col gap-2 pt-4 border-t border-border/50">
                   <Button
-                    variant="ghost"
-                    asChild
+                    onClick={() => open()}
+                    className="bg-primary hover:bg-primary/90 glow-primary"
                   >
-                    <Link
-                      href="/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Login
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <Link
-                      href="/signup"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Get Started
-                    </Link>
+                    {isConnected
+                      ? `Connected: ${address?.slice(0, 6)}...`
+                      : "Connect Wallet"}
                   </Button>
                 </div>
               )}

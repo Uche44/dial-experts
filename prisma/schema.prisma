@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client"
@@ -14,34 +10,45 @@ datasource db {
 }
 
 enum UserRole {
-  USER
-  EXPERT
-  ADMIN
+  user
+  expert
 }
+
 
 model User {
   id            String   @id @default(cuid())
   name          String
   email         String   @unique
-  walletAddress String?  @unique
-  role          UserRole @default(USER)
+  walletAddress String?  @unique            
+  role          UserRole @default(user)
   avatar        String?
-  createdAt     DateTime @default(now())
+  expertProfile ExpertProfile?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  // Relations
-  expertProfile Expert?
+  @@index([email])
+  @@index([walletAddress])
+  @@index([role])
 }
 
-model Expert {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  user         User     @relation(fields: [userId], references: [id])
-  bio          String?
-  field        String
-  ratePerMin   Int
-  availability Json
-  status           String?  @default("active")   // "pending", "active", "rejected"
-  cvUrl            String?
-  certificateUrl   String?
-  createdAt    DateTime @default(now())
+model ExpertProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  field          String
+  bio            String
+  ratePerMin     Int
+  status         String   @default("pending")
+  availability   Json     @default("{}")
+  
+  cvUrl          String?
+  certificateUrl String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }

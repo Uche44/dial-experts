@@ -1,5 +1,5 @@
-// User Types
-export type UserRole = "user" | "expert" | "admin"
+
+export type UserRole = "user" | "expert" 
 
 export interface User {
   id: string

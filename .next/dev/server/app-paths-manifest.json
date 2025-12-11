@@ -1,11 +1,8 @@
 {
-  "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/(auth)/signup/page": "app/(auth)/signup/page.js",
-  "/(expert)/expert/page": "app/(expert)/expert/page.js",
-  "/(main)/call/[id]/page": "app/(main)/call/[id]/page.js",
   "/(main)/dashboard/page": "app/(main)/dashboard/page.js",
-  "/(main)/experts/[id]/page": "app/(main)/experts/[id]/page.js",
-  "/(main)/experts/page": "app/(main)/experts/page.js",
-  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/check-wallet/route": "app/api/auth/check-wallet/route.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/auth/signup/route": "app/api/auth/signup/route.js",
   "/page": "app/page.js"
 }

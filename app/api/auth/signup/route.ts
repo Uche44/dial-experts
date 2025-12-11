@@ -1,50 +1,49 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
-import bcrypt from "bcryptjs";
 import { uploadToCloudinary } from "@/lib/cloudinary-upload";
+import { UserRole } from "@/app/generated/prisma/enums";
+import { generateToken } from "@/lib/jwt";
+
 
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
+    const walletAddress = formData.get("walletAddress") as string;
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
     const role = formData.get("role") as string;
 
-    // Optional file
-    // const avatarFile = formData.get("avatar") as File | null;
-
-    if (!name || !email || !password || !role) {
+    if (!walletAddress || !name || !email || !role) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    // Check if wallet exists
+    const existingWallet = await prisma.user.findUnique({
+      where: { walletAddress },
     });
 
-    if (existingUser) {
+    if (existingWallet) {
       return NextResponse.json(
-        { error: "User already exists with this email" },
+        { error: "Wallet address already registered" },
         { status: 409 }
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    let avatarUrl = null;
+    // Check if email exists
+    const existingEmail = await prisma.user.findUnique({
+      where: { email },
+    });
 
-    // Upload avatar if provided
-    // if (avatarFile && avatarFile.size > 0) {
-    //   try {
-    //     avatarUrl = await uploadToCloudinary(avatarFile, "dialexperts/avatars");
-    //   } catch (uploadError) {
-    //     console.error("Avatar upload failed:", uploadError);
-
-    //   }
-    // }
+    if (existingEmail) {
+      return NextResponse.json(
+        { error: "Email already registered" },
+        { status: 409 }
+      );
+    }
 
     if (role === "expert") {
       const field = formData.get("field") as string;
@@ -60,7 +59,7 @@ export async function POST(request: Request) {
         );
       }
 
-      // Upload Expert documents
+      // Upload files
       let cvUrl = null;
       let certificateUrl = null;
 
@@ -74,14 +73,13 @@ export async function POST(request: Request) {
         );
       }
 
-      // Create user with expert profile in a transaction
+      // Create expert 
       const newUser = await prisma.user.create({
         data: {
           name,
           email,
-          password: hashedPassword,
-          role: "expert",
-          avatar: avatarUrl,
+          walletAddress,
+          role: role as UserRole, 
           expertProfile: {
             create: {
               field,
@@ -99,6 +97,18 @@ export async function POST(request: Request) {
         },
       });
 
+    
+      const token = generateToken(newUser.id, newUser.walletAddress!, newUser.role);
+
+      // Set token in httpOnly cookie
+      (await cookies()).set("auth_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7, 
+        path: "/",
+      });
+
       return NextResponse.json(
         {
           user: {
@@ -106,32 +116,43 @@ export async function POST(request: Request) {
             name: newUser.name,
             email: newUser.email,
             role: newUser.role,
-            avatar: newUser.avatar,
+            walletAddress: newUser.walletAddress,
             createdAt: newUser.createdAt,
           },
           expert: newUser.expertProfile,
-          message: "Application submitted successfully",
+          message: "Expert application submitted successfully",
         },
         { status: 201 }
       );
     } else {
-      // Regular user signup
+      // Create regular user
       const newUser = await prisma.user.create({
         data: {
           name,
           email,
-          password: hashedPassword,
-          role: "user",
-          avatar: avatarUrl,
+          walletAddress,
+          role: role as UserRole, 
         },
         select: {
           id: true,
           name: true,
           email: true,
           role: true,
-          avatar: true,
+          walletAddress: true,
           createdAt: true,
         },
+      });
+
+     
+      const token = generateToken(newUser.id, newUser.walletAddress!, newUser.role);
+
+      // Set token in httpOnly cookie
+      (await cookies()).set("auth_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7, 
+        path: "/",
       });
 
       return NextResponse.json(
