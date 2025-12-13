@@ -6,7 +6,8 @@ import { useAuth } from "@/lib/auth-context"
 import { SolanaLogo } from "@/components/solana-logo"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
+import { VisuallyHidden } from "@/components/ui/visually-hidden"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
@@ -131,6 +132,9 @@ export function ExpertSidebar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0 glass border-border/50">
+              <VisuallyHidden>
+                <SheetTitle>Expert Navigation Menu</SheetTitle>
+              </VisuallyHidden>
               <SidebarContent onNavigate={() => setOpen(false)} />
             </SheetContent>
           </Sheet>

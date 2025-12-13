@@ -1,7 +1,5 @@
-
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../app/generated/prisma"
 }
 
@@ -14,15 +12,15 @@ enum UserRole {
   expert
 }
 
-
 model User {
   id            String   @id @default(cuid())
   name          String
   email         String   @unique
-  walletAddress String?  @unique            
+  walletAddress String?  @unique
   role          UserRole @default(user)
   avatar        String?
   expertProfile ExpertProfile?
+  bookings      Booking[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -45,10 +43,53 @@ model ExpertProfile {
   
   cvUrl          String?
   certificateUrl String?
+  bookings       Booking[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([status])
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expertId  String
+  expert    ExpertProfile @relation(fields: [expertId], references: [id], onDelete: Cascade)
+  
+  slotStart DateTime
+  slotEnd   DateTime
+  callLink  String?
+  status    String   @default("pending")
+  cost      Int
+  
+  call      Call?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([expertId])
+  @@index([status])
+  @@index([slotStart])
+}
+
+model Call {
+  id              String   @id @default(cuid())
+  bookingId       String   @unique
+  booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  startTime       DateTime
+  endTime         DateTime?
+  durationMinutes Int      @default(0)
+  amountCharged   Int      @default(0)
+  rating          Int?
+  review          String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([bookingId])
 }

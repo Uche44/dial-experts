@@ -1,41 +1,69 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Star, Filter, SlidersHorizontal } from "lucide-react"
-import { mockExperts, mockCategories } from "@/lib/mock-data"
+import { Search, Star, Filter, SlidersHorizontal, Loader2 } from "lucide-react"
+import { mockCategories } from "@/lib/mock-data"
+import type { Expert } from "@/lib/types"
+import { useExperts } from "@/context/experts-context"
 
 export default function ExpertsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedField, setSelectedField] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("rating")
+  const {experts, setExperts} = useExperts()
+  // const [experts, setExperts] = useState<Expert[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const filteredExperts = mockExperts
+  // Fetch experts from API
+  useEffect(() => {
+    async function fetchExperts() {
+      try {
+        setLoading(true)
+        const response = await fetch("/api/experts")
+        if (!response.ok) {
+          throw new Error("Failed to fetch experts")
+        }
+        const data = await response.json()
+        setExperts(data)
+        console.log('Experts:', data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchExperts()
+  }, [])
+
+  const filteredExperts = experts
     .filter((expert) => {
       const matchesSearch =
         expert.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         expert.field.toLowerCase().includes(searchQuery.toLowerCase()) ||
         expert.bio.toLowerCase().includes(searchQuery.toLowerCase())
       const matchesField = selectedField === "all" || expert.field === selectedField
-      return matchesSearch && matchesField && expert.status === "approved"
+      return matchesSearch && matchesField && expert.status === "pending"
     })
     .sort((a, b) => {
       switch (sortBy) {
         case "rating":
-          return b.rating - a.rating
+          return (b.rating || 0) - (a.rating || 0)
         case "price-low":
           return a.ratePerMin - b.ratePerMin
         case "price-high":
           return b.ratePerMin - a.ratePerMin
         case "reviews":
-          return b.totalReviews - a.totalReviews
+          return (b.totalReviews || 0) - (a.totalReviews || 0)
         default:
-          return 0
+          return 0  
       }
     })
 
@@ -93,13 +121,37 @@ export default function ExpertsPage() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <span className="ml-3 text-muted-foreground">Loading experts...</span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-20">
+            <p className="text-red-500 mb-4">Error: {error}</p>
+            <Button
+              variant="outline"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
+          </div>
+        )}
+
         {/* Results count */}
-        <p className="text-sm text-muted-foreground mb-6">
-          Showing {filteredExperts.length} expert{filteredExperts.length !== 1 ? "s" : ""}
-        </p>
+        {!loading && !error && (
+          <p className="text-sm text-muted-foreground mb-6">
+            Showing {filteredExperts.length} expert{filteredExperts.length !== 1 ? "s" : ""}
+          </p>
+        )}
 
         {/* Experts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredExperts.map((expert) => (
             <Link key={expert.id} href={`/experts/${expert.id}`} className="group">
               <div className="h-full p-6 rounded-xl glass border border-border/50 hover:border-primary/50 transition-all duration-300">
@@ -146,9 +198,10 @@ export default function ExpertsPage() {
               </div>
             </Link>
           ))}
-        </div>
+          </div>
+        )}
 
-        {filteredExperts.length === 0 && (
+        {!loading && !error && filteredExperts.length === 0 && (
           <div className="text-center py-20">
             <p className="text-muted-foreground">No experts found matching your criteria.</p>
             <Button

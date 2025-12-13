@@ -18,12 +18,12 @@ export interface Expert {
   field: string
   ratePerMin: number
   bio: string
-  availability: AvailabilitySlot[]
-  rating: number
-  totalReviews: number
+  availability?: AvailabilitySlot[]
+  rating?: number
+  totalReviews?: number
   status: "pending" | "approved" | "suspended"
-  completedCalls: number
-  totalEarnings: number
+  completedCalls?: number
+  totalEarnings?: number
 }
 
 export interface AvailabilitySlot {

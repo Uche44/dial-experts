@@ -3,6 +3,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.scrollable-div {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+
 /* Solana-themed dark mode design system */
 :root {
   --background: oklch(0.13 0.02 280);

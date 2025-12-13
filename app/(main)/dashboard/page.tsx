@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -8,12 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/auth-context"
-import { mockBookings, mockCalls } from "@/lib/mock-data"
-import { Calendar, Clock, Video, History, Search, ArrowRight } from "lucide-react"
+import { Calendar, Clock, Video, History, Search, ArrowRight, Loader2 } from "lucide-react"
+import type { Booking } from "@/lib/types"
 
 export default function UserDashboard() {
   const router = useRouter()
   const { user, isAuthenticated, isLoading } = useAuth()
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [isLoadingBookings, setIsLoadingBookings] = useState(true)
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -21,16 +23,41 @@ export default function UserDashboard() {
     }
   }, [isAuthenticated, isLoading, router])
 
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!isAuthenticated) return
+
+      try {
+        setIsLoadingBookings(true)
+        const response = await fetch("/api/bookings?status=confirmed,pending")
+        
+        if (response.ok) {
+          const data = await response.json()
+          setBookings(data)
+        }
+      } catch (error) {
+        console.error("Error fetching bookings:", error)
+      } finally {
+        setIsLoadingBookings(false)
+      }
+    }
+
+    fetchBookings()
+  }, [isAuthenticated])
+
   if (isLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       </div>
     )
   }
 
-  const userBookings = mockBookings.filter((b) => b.status === "confirmed" || b.status === "pending")
-  const userCalls = mockCalls.slice(0, 3)
+  const upcomingBookings = bookings.filter(b => new Date(b.slotStart) > new Date())
+  const pastBookings = bookings.filter(b => new Date(b.slotStart) <= new Date())
 
   return (
     <div className="min-h-screen py-12">
@@ -60,7 +87,7 @@ export default function UserDashboard() {
                   <Video className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{userBookings.length}</p>
+                  <p className="text-2xl font-bold">{upcomingBookings.length}</p>
                   <p className="text-sm text-muted-foreground">Upcoming Calls</p>
                 </div>
               </div>
@@ -73,7 +100,7 @@ export default function UserDashboard() {
                   <History className="w-6 h-6 text-accent" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{userCalls.length}</p>
+                  <p className="text-2xl font-bold">{pastBookings.length}</p>
                   <p className="text-sm text-muted-foreground">Past Consultations</p>
                 </div>
               </div>
@@ -86,7 +113,9 @@ export default function UserDashboard() {
                   <Clock className="w-6 h-6 text-chart-3" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{userCalls.reduce((acc, c) => acc + c.durationMinutes, 0)}</p>
+                  <p className="text-2xl font-bold">
+                    {pastBookings.reduce((acc, b) => acc + 20, 0)}
+                  </p>
                   <p className="text-sm text-muted-foreground">Total Minutes</p>
                 </div>
               </div>
@@ -105,9 +134,14 @@ export default function UserDashboard() {
               <CardDescription>Your scheduled sessions with experts</CardDescription>
             </CardHeader>
             <CardContent>
-              {userBookings.length > 0 ? (
+              {isLoadingBookings ? (
+                <div className="text-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Loading bookings...</p>
+                </div>
+              ) : upcomingBookings.length > 0 ? (
                 <div className="space-y-4">
-                  {userBookings.map((booking) => (
+                  {upcomingBookings.map((booking) => (
                     <div
                       key={booking.id}
                       className="flex items-center justify-between p-4 rounded-lg bg-muted/20 border border-border/50"
@@ -170,39 +204,35 @@ export default function UserDashboard() {
               <CardDescription>Your past consultations and payments</CardDescription>
             </CardHeader>
             <CardContent>
-              {userCalls.length > 0 ? (
+              {isLoadingBookings ? (
+                <div className="text-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Loading activity...</p>
+                </div>
+              ) : pastBookings.length > 0 ? (
                 <div className="space-y-4">
-                  {userCalls.map((call) => (
+                  {pastBookings.slice(0, 3).map((booking) => (
                     <div
-                      key={call.id}
+                      key={booking.id}
                       className="flex items-center justify-between p-4 rounded-lg bg-muted/20 border border-border/50"
                     >
                       <div className="flex items-center gap-3">
                         <Avatar>
-                          <AvatarImage src={call.booking?.expert?.user.avatar || "/placeholder.svg"} />
+                          <AvatarImage src={booking.expert?.user.avatar || "/placeholder.svg"} />
                           <AvatarFallback>
-                            {call.booking?.expert?.user.name
+                            {booking.expert?.user.name
                               .split(" ")
                               .map((n) => n[0])
                               .join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium">{call.booking?.expert?.user.name}</p>
+                          <p className="font-medium">{booking.expert?.user.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {call.durationMinutes} min • ₦{call.amountCharged}
+                            20 min • ₦{booking.cost}
                           </p>
                         </div>
                       </div>
-                      {call.rating && (
-                        <div className="flex items-center gap-1">
-                          {[...Array(call.rating)].map((_, i) => (
-                            <svg key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" viewBox="0 0 20 20">
-                              <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                            </svg>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>

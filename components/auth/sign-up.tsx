@@ -11,7 +11,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  //   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -25,10 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth-context";
-// import { SolanaLogo } from "@/components/solana-logo";
 import {
   Loader2,
-  //   Wallet,
   User,
   Briefcase,
   ArrowRight,
@@ -62,16 +59,14 @@ interface ExpertFormData extends UserFormData {
 
 export default function SignupForm({
   isOpen,
-  onClose,
+  // onClose,
   walletAddress,
   onComplete,
 }: SignupFormProps) {
-  //   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultRole = (searchParams.get("role") as SignupRole) || "user";
   const { isLoading, user, setUser } = useAuth();
   const { toast } = useToast();
-
   const [activeTab, setActiveTab] = useState<SignupRole>(defaultRole);
   const [expertStep, setExpertStep] = useState(1);
 
@@ -177,22 +172,17 @@ export default function SignupForm({
   return (
     <Suspense
       fallback={
-        <div className="w-full max-w-lg mx-auto px-4 py-12 flex justify-center items-center">
+        <div className="w-full max-w-lg mx-auto px-4 py-4 flex justify-center items-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       }
     >
       <div className="w-full  max-w-lg mx-auto px-4 py-12">
-        {/* Background effects */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
-        </div>
 
-        <div className="relative bg-black">
+        <div className="scrollable-div relative bg-black">
           <Card className="glass border-border/50">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Create Account</CardTitle>
+
               <CardDescription>
                 Join DialExperts and start connecting with experts
               </CardDescription>
@@ -567,12 +557,6 @@ export default function SignupForm({
                   </form>
                 </TabsContent>
               </Tabs>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border" />
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>

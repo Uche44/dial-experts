@@ -1,16 +1,46 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { mockBookings, mockCalls } from "@/lib/mock-data"
-import { History, Calendar, Clock, Star, Video } from "lucide-react"
+import { History, Calendar, Clock, Star, Video, Loader2 } from "lucide-react"
+import type { Booking } from "@/lib/types"
 
 export default function ExpertCallsPage() {
-  const upcomingBookings = mockBookings.filter((b) => b.status === "confirmed" || b.status === "pending")
-  const pastCalls = mockCalls
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch("/api/expert/bookings")
+        
+        if (response.ok) {
+          const data = await response.json()
+          setBookings(data)
+        }
+      } catch (error) {
+        console.error("Error fetching bookings:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchBookings()
+  }, [])
+
+  const upcomingBookings = bookings.filter(b => 
+    new Date(b.slotStart) > new Date() && 
+    (b.status === "confirmed" || b.status === "pending")
+  )
+  const pastBookings = bookings.filter(b => 
+    new Date(b.slotStart) <= new Date() && 
+    b.status === "completed"
+  )
 
   return (
     <div className="min-h-screen pt-16 lg:pt-0">
@@ -32,7 +62,7 @@ export default function ExpertCallsPage() {
             </TabsTrigger>
             <TabsTrigger value="past" className="flex items-center gap-2">
               <History className="w-4 h-4" />
-              Past ({pastCalls.length})
+              Past ({pastBookings.length})
             </TabsTrigger>
           </TabsList>
 
@@ -43,7 +73,12 @@ export default function ExpertCallsPage() {
                 <CardDescription>Your scheduled calls with clients</CardDescription>
               </CardHeader>
               <CardContent>
-                {upcomingBookings.length > 0 ? (
+                {isLoading ? (
+                  <div className="text-center py-12">
+                    <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+                    <p className="text-muted-foreground">Loading bookings...</p>
+                  </div>
+                ) : upcomingBookings.length > 0 ? (
                   <div className="space-y-4">
                     {upcomingBookings.map((booking) => (
                       <div
@@ -105,50 +140,38 @@ export default function ExpertCallsPage() {
                 <CardDescription>Your completed calls and earnings</CardDescription>
               </CardHeader>
               <CardContent>
-                {pastCalls.length > 0 ? (
+                {isLoading ? (
+                  <div className="text-center py-12">
+                    <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+                    <p className="text-muted-foreground">Loading past calls...</p>
+                  </div>
+                ) : pastBookings.length > 0 ? (
                   <div className="space-y-4">
-                    {pastCalls.map((call) => (
+                    {pastBookings.map((booking) => (
                       <div
-                        key={call.id}
+                        key={booking.id}
                         className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg bg-muted/20 border border-border/50 gap-4"
                       >
                         <div className="flex items-center gap-4">
                           <Avatar className="w-12 h-12">
-                            <AvatarImage src={call.booking?.user?.avatar || "/placeholder.svg"} />
+                            <AvatarImage src={booking.user?.avatar || "/placeholder.svg"} />
                             <AvatarFallback>
-                              {call.booking?.user?.name
+                              {booking.user?.name
                                 .split(" ")
                                 .map((n) => n[0])
                                 .join("")}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{call.booking?.user?.name}</p>
+                            <p className="font-medium">{booking.user?.name}</p>
                             <p className="text-sm text-muted-foreground">
-                              {new Date(call.startTime).toLocaleDateString()} • {call.durationMinutes} minutes
+                              {new Date(booking.slotStart).toLocaleDateString()} • 20 minutes
                             </p>
-                            {call.review && (
-                              <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                                &quot;{call.review}&quot;
-                              </p>
-                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          {call.rating && (
-                            <div className="flex items-center gap-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`w-4 h-4 ${
-                                    i < call.rating! ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          )}
                           <div className="text-right">
-                            <p className="font-semibold text-primary">₦{call.amountCharged}</p>
+                            <p className="font-semibold text-primary">₦{booking.cost}</p>
                             <Badge variant="secondary">Completed</Badge>
                           </div>
                         </div>

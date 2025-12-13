@@ -31,14 +31,28 @@ export function WalletConnectButton() {
       const data = await response.json();
 
       if (data.exists) {
-        // User exists - log them in and navigate
-        toast({
-          title: "Welcome back!",
-          description: `Logged in as ${data.user.name}`,
+        // User exists - log them in by calling the login endpoint
+        const loginResponse = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ walletAddress: wallet }),
         });
 
-        // Navigate based on role
-        router.push(data.user.role === "expert" ? "/expert" : "/dashboard");
+        if (!loginResponse.ok) {
+          throw new Error("Login failed");
+        }
+
+        const loginData = await loginResponse.json();
+
+        toast({
+          title: "Welcome back!",
+          description: `Logged in as ${loginData.user.name}`,
+        });
+
+        // Reload the page to trigger auth context refresh
+        window.location.href = loginData.user.role === "expert" ? "/expert" : "/dashboard";
       } else {
         // New user - show signup modal
         setWalletAddress(wallet);
@@ -69,7 +83,8 @@ export function WalletConnectButton() {
           ? "Your expert application is pending review."
           : "Welcome to DialExperts!",
     });
-    router.push(role === "expert" ? "/expert" : "/dashboard");
+    // Reload the page to trigger auth context refresh
+    window.location.href = role === "expert" ? "/expert" : "/dashboard";
   };
 
   if (isConnected && isChecking) {

@@ -15,11 +15,11 @@ export default function ExpertDashboard() {
   const router = useRouter()
   const { user, isAuthenticated, isLoading } = useAuth()
 
-  useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== "expert")) {
-      router.push("/login?role=expert")
-    }
-  }, [isAuthenticated, isLoading, user, router])
+  // useEffect(() => {
+  //   if (!isLoading && (!isAuthenticated || user?.role !== "expert")) {
+  //     router.push("/login?role=expert")
+  //   }
+  // }, [isAuthenticated, isLoading, user, router])
 
   if (isLoading || !user) {
     return (

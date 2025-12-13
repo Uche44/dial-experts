@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -23,16 +23,64 @@ interface DaySchedule {
 export default function AvailabilityPage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [isFetching, setIsFetching] = useState(true)
 
   const [schedule, setSchedule] = useState<Record<string, DaySchedule>>({
-    Monday: { enabled: true, startTime: "09:00", endTime: "17:00" },
-    Tuesday: { enabled: true, startTime: "09:00", endTime: "17:00" },
-    Wednesday: { enabled: true, startTime: "09:00", endTime: "17:00" },
-    Thursday: { enabled: true, startTime: "09:00", endTime: "17:00" },
-    Friday: { enabled: true, startTime: "09:00", endTime: "15:00" },
+    Monday: { enabled: false, startTime: "09:00", endTime: "17:00" },
+    Tuesday: { enabled: false, startTime: "09:00", endTime: "17:00" },
+    Wednesday: { enabled: false, startTime: "09:00", endTime: "17:00" },
+    Thursday: { enabled: false, startTime: "09:00", endTime: "17:00" },
+    Friday: { enabled: false, startTime: "09:00", endTime: "15:00" },
     Saturday: { enabled: false, startTime: "10:00", endTime: "14:00" },
     Sunday: { enabled: false, startTime: "10:00", endTime: "14:00" },
   })
+
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        setIsFetching(true)
+        const response = await fetch("/api/expert/profile")
+
+        if (!response.ok) {
+          toast({
+            title: "Error",
+            description: "Failed to load availability",
+            variant: "destructive",
+          })
+          return
+        }
+
+        const data = await response.json()
+        
+        // Transform availability from DB format to component format
+        if (data.availability && typeof data.availability === 'object') {
+          const newSchedule: Record<string, DaySchedule> = {}
+          days.forEach(day => {
+            if (data.availability[day]) {
+              newSchedule[day] = {
+                enabled: true,
+                startTime: data.availability[day].startTime,
+                endTime: data.availability[day].endTime
+              }
+            } else {
+              newSchedule[day] = {
+                enabled: false,
+                startTime: "09:00",
+                endTime: "17:00"
+              }
+            }
+          })
+          setSchedule(newSchedule)
+        }
+      } catch (error) {
+        console.error("Error fetching availability:", error)
+      } finally {
+        setIsFetching(false)
+      }
+    }
+
+    fetchAvailability()
+  }, [toast])
 
   const handleToggleDay = (day: string) => {
     setSchedule((prev) => ({
@@ -50,12 +98,46 @@ export default function AvailabilityPage() {
 
   const handleSave = async () => {
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    toast({
-      title: "Availability updated!",
-      description: "Your schedule has been saved.",
-    })
+    try {
+      // Transform schedule to DB format (only enabled days)
+      const availability: Record<string, { startTime: string; endTime: string }> = {}
+      Object.entries(schedule).forEach(([day, daySchedule]) => {
+        if (daySchedule.enabled) {
+          availability[day] = {
+            startTime: daySchedule.startTime,
+            endTime: daySchedule.endTime
+          }
+        }
+      })
+
+      const response = await fetch("/api/expert/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          availability: availability,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update availability")
+      }
+
+      toast({
+        title: "Availability updated!",
+        description: "Your schedule has been saved.",
+      })
+    } catch (error) {
+      console.error("Error updating availability:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update availability. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleCopyToAll = (sourceDay: string) => {

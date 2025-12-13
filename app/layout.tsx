@@ -6,7 +6,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 import { AppKitProvider } from "@/context/appkit-provider";
-// import { SignUpModalProvider } from "@/context/signup-modal-display";
+import ExpertsProvider from "@/context/experts-context";
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -30,10 +30,12 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased min-h-screen">
         <AuthProvider>
-          {/* <SignUpModalProvider> */}
+         
+          <ExpertsProvider>
             <AppKitProvider>{children}</AppKitProvider>
-          {/* </SignUpModalProvider> */}
-          <Toaster />
+             <Toaster />
+          </ExpertsProvider>
+         
         </AuthProvider>
         <Analytics />
       </body>

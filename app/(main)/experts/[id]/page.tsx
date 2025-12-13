@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, use } from "react"
+import { useState, use, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -17,32 +17,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Star, Clock, Phone, CalendarIcon, ChevronLeft, Wallet } from "lucide-react"
-import { mockExperts } from "@/lib/mock-data"
+import { Star, Clock, Phone, CalendarIcon, ChevronLeft, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
-import { WalletConnectModal } from "@/components/payment/wallet-connect-modal"
-import { PreAuthModal } from "@/components/payment/pre-auth-modal"
+// import { WalletConnectModal } from "@/components/payment/wallet-connect-modal"
+// import { PreAuthModal } from "@/components/payment/pre-auth-modal"
+import type { Expert } from "@/lib/types"
 
-const timeSlots = [
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-  "12:00",
-  "12:30",
-  "13:00",
-  "13:30",
-  "14:00",
-  "14:30",
-  "15:00",
-  "15:30",
-  "16:00",
-  "16:30",
-  "17:00",
-]
+const timeSlots = Array.from({ length: 48 }, (_, i) => {
+  const hour = Math.floor(i / 2).toString().padStart(2, "0")
+  const minute = i % 2 === 0 ? "00" : "30"
+  return `${hour}:${minute}`
+})
 
 export default function ExpertProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -50,21 +36,62 @@ export default function ExpertProfilePage({ params }: { params: Promise<{ id: st
   const { user, isAuthenticated } = useAuth()
   const { toast } = useToast()
 
-  const expert = mockExperts.find((e) => e.id === id)
+  const [expert, setExpert] = useState<Expert | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [selectedTime, setSelectedTime] = useState<string>("")
   const [showBookingModal, setShowBookingModal] = useState(false)
-  const [showWalletModal, setShowWalletModal] = useState(false)
-  const [showPreAuthModal, setShowPreAuthModal] = useState(false)
-  const [walletAddress, setWalletAddress] = useState<string>("")
+  // const [showWalletModal, setShowWalletModal] = useState(false)
+  // const [showPreAuthModal, setShowPreAuthModal] = useState(false)
+  // const [walletAddress, setWalletAddress] = useState<string>("")
   const [isProcessing, setIsProcessing] = useState(false)
 
-  if (!expert) {
+  useEffect(() => {
+    const fetchExpert = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/experts/${id}`)
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError("Expert not found")
+          } else {
+            setError("Failed to load expert profile")
+          }
+          return
+        }
+
+        const data = await response.json()
+        setExpert(data)
+      } catch (err) {
+        console.error("Error fetching expert:", err)
+        setError("Failed to load expert profile")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchExpert()
+  }, [id])
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Expert Not Found</h1>
+          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading expert profile...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !expert) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">{error || "Expert Not Found"}</h1>
           <Button asChild>
             <Link href="/experts">Browse Experts</Link>
           </Button>
@@ -72,6 +99,8 @@ export default function ExpertProfilePage({ params }: { params: Promise<{ id: st
       </div>
     )
   }
+
+  console.log("availability:", expert.availability, Array.isArray(expert.availability))
 
   const callCost = expert.ratePerMin * 20
 
@@ -98,34 +127,96 @@ export default function ExpertProfilePage({ params }: { params: Promise<{ id: st
     setShowBookingModal(true)
   }
 
-  const handleConfirmBooking = () => {
-    setShowBookingModal(false)
-    if (user?.walletAddress) {
-      setWalletAddress(user.walletAddress)
-      setShowPreAuthModal(true)
-    } else {
-      setShowWalletModal(true)
-    }
-  }
 
-  const handleWalletConnect = (address: string) => {
-    setWalletAddress(address)
-    setShowWalletModal(false)
-    setShowPreAuthModal(true)
-  }
-
-  const handlePreAuthApprove = () => {
-    setShowPreAuthModal(false)
+const handleBooking = async () => {
+  if (!expert || !selectedDate || !selectedTime) {
     toast({
-      title: "Booking confirmed!",
-      description: "Your consultation has been scheduled. Check your dashboard for details.",
+      title: "Invalid booking",
+      description: "Please select a valid date and time.",
+      variant: "destructive",
     })
-    router.push("/dashboard")
+    return
   }
+
+  setIsProcessing(true)
+
+  try {
+    // Build slot start datetime
+    const slotStart = new Date(selectedDate)
+    const [hours, minutes] = selectedTime.split(":")
+    slotStart.setHours(Number(hours), Number(minutes), 0, 0)
+
+    // 20-minute session
+    const slotEnd = new Date(slotStart)
+    slotEnd.setMinutes(slotEnd.getMinutes() + 20)
+
+    const response = await fetch("/api/bookings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        expertId: expert.id,
+        slotStart: slotStart.toISOString(),
+        slotEnd: slotEnd.toISOString(),
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || "Failed to create booking")
+    }
+
+    toast({
+      title: "Booking confirmed",
+      description: "Your consultation has been scheduled.",
+    })
+
+    // Close modal and redirect
+    setShowBookingModal(false)
+    router.push("/dashboard")
+  } catch (error: any) {
+    console.error("Booking error:", error)
+
+    toast({
+      title: "Booking failed",
+      description: error.message || "Something went wrong.",
+      variant: "destructive",
+    })
+  } finally {
+    setIsProcessing(false)
+  }
+}
+
+  
+
+   
+     
 
   const isDateAvailable = (date: Date) => {
     const dayName = date.toLocaleDateString("en-US", { weekday: "long" })
-    return expert.availability.some((slot) => slot.day === dayName) && date >= new Date()
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    return (
+      !!expert.availability?.[dayName] &&
+      date >= today
+    )
+  }
+
+  const getAvailableTimeSlots = () => {
+    if (!selectedDate || !expert.availability) return []
+
+    const dayName = selectedDate.toLocaleDateString("en-US", { weekday: "long" })
+    const availability = expert.availability as Record<string, { startTime: string; endTime: string }>
+    const dayAvailability = availability[dayName]
+
+    if (!dayAvailability) return []
+
+    // Filter time slots to only show those within expert's available hours
+    return timeSlots.filter(time => {
+      return time >= dayAvailability.startTime && time < dayAvailability.endTime
+    })
   }
 
   return (
@@ -206,7 +297,9 @@ export default function ExpertProfilePage({ params }: { params: Promise<{ id: st
                   <CardContent>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => {
-                        const slot = expert.availability.find((s) => s.day === day)
+                        // const slot = expert.availability?.find((s) => s.day === day)
+                        const slot = expert.availability?.[day]
+
                         return (
                           <div
                             key={day}
@@ -291,8 +384,8 @@ export default function ExpertProfilePage({ params }: { params: Promise<{ id: st
                 {selectedDate && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Available Times</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {timeSlots.slice(0, 12).map((time) => (
+                    <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                      {getAvailableTimeSlots().map((time) => (
                         <Button
                           key={time}
                           variant={selectedTime === time ? "default" : "outline"}
@@ -304,6 +397,11 @@ export default function ExpertProfilePage({ params }: { params: Promise<{ id: st
                         </Button>
                       ))}
                     </div>
+                    {getAvailableTimeSlots().length === 0 && (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        No available time slots for this day
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -362,11 +460,11 @@ export default function ExpertProfilePage({ params }: { params: Promise<{ id: st
                 <span>20 minutes</span>
               </div>
               <div className="flex justify-between font-medium pt-2 border-t border-border/50">
-                <span>Max Cost</span>
+                <span>Cost</span>
                 <span className="text-primary">₦{callCost}</span>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/10 border border-primary/30">
+            {/* <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/10 border border-primary/30">
               <Wallet className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div className="text-sm">
                 <p className="font-medium text-primary">Solana Delegate Approval</p>
@@ -374,32 +472,18 @@ export default function ExpertProfilePage({ params }: { params: Promise<{ id: st
                   You&apos;ll pre-authorize up to ₦{callCost}. Only actual minutes used will be charged.
                 </p>
               </div>
-            </div>
+            </div> */}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowBookingModal(false)}>
               Cancel
             </Button>
-            <Button onClick={handleConfirmBooking} className="bg-primary hover:bg-primary/90">
-              <Wallet className="mr-2 w-4 h-4" />
-              Continue to Payment
+            <Button onClick={handleBooking} className="bg-primary hover:bg-primary/90">
+              Confirm Booking
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <WalletConnectModal open={showWalletModal} onOpenChange={setShowWalletModal} onConnect={handleWalletConnect} />
-
-      <PreAuthModal
-        open={showPreAuthModal}
-        onOpenChange={setShowPreAuthModal}
-        expertName={expert.user.name}
-        expertRate={expert.ratePerMin}
-        maxAmount={callCost}
-        walletAddress={walletAddress || user?.walletAddress || ""}
-        onApprove={handlePreAuthApprove}
-        onCancel={() => setShowPreAuthModal(false)}
-      />
     </div>
   )
 }

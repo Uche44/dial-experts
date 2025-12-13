@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,34 +11,118 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAuth } from "@/lib/auth-context"
-import { mockExperts, mockCategories } from "@/lib/mock-data"
+import { mockCategories } from "@/lib/mock-data"
 import { useToast } from "@/hooks/use-toast"
 import { User, Camera, Save, Loader2 } from "lucide-react"
+import type { Expert } from "@/lib/types"
 
 export default function ExpertProfilePage() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const expert = mockExperts[0]
 
   const [isLoading, setIsLoading] = useState(false)
+  const [isFetching, setIsFetching] = useState(true)
+  const [expert, setExpert] = useState<Expert | null>(null)
   const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    field: expert.field,
-    bio: expert.bio,
-    ratePerMin: expert.ratePerMin.toString(),
-    walletAddress: user?.walletAddress || "",
+    name: "",
+    email: "",
+    field: "",
+    bio: "",
+    ratePerMin: "",
+    walletAddress: "",
   })
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setIsFetching(true)
+        const response = await fetch("/api/expert/profile")
+
+        if (!response.ok) {
+          toast({
+            title: "Error",
+            description: "Failed to load profile",
+            variant: "destructive",
+          })
+          return
+        }
+
+        const data = await response.json()
+        setExpert(data)
+        setFormData({
+          name: data.user.name,
+          email: data.user.email,
+          field: data.field,
+          bio: data.bio,
+          ratePerMin: data.ratePerMin.toString(),
+          walletAddress: data.user.walletAddress || "",
+        })
+      } catch (error) {
+        console.error("Error fetching profile:", error)
+        toast({
+          title: "Error",
+          description: "Failed to load profile",
+          variant: "destructive",
+        })
+      } finally {
+        setIsFetching(false)
+      }
+    }
+
+    fetchProfile()
+  }, [toast])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    toast({
-      title: "Profile updated!",
-      description: "Your changes have been saved successfully.",
-    })
+
+    try {
+      const response = await fetch("/api/expert/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          field: formData.field,
+          bio: formData.bio,
+          ratePerMin: formData.ratePerMin,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile")
+      }
+
+      const updatedExpert = await response.json()
+      setExpert(updatedExpert)
+
+      toast({
+        title: "Profile updated!",
+        description: "Your changes have been saved successfully.",
+      })
+    } catch (error) {
+      console.error("Error updating profile:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isFetching) {
+    return (
+      <div className="min-h-screen pt-16 lg:pt-0 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading profile...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -114,6 +198,7 @@ export default function ExpertProfilePage() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="bg-input border-border"
+                    placeholder={expert?.user.email}
                   />
                 </div>
               </div>
@@ -122,10 +207,11 @@ export default function ExpertProfilePage() {
                 <Input
                   id="wallet"
                   value={formData.walletAddress}
-                  onChange={(e) => setFormData({ ...formData, walletAddress: e.target.value })}
-                  className="bg-input border-border font-mono"
+                  readOnly
+                  disabled
+                  className="bg-muted/50 border-border font-mono cursor-not-allowed"
                 />
-                <p className="text-xs text-muted-foreground">Payouts will be sent to this address</p>
+                <p className="text-xs text-muted-foreground">Wallet address cannot be changed</p>
               </div>
             </CardContent>
           </Card>

@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this-in-production";
-const TOKEN_EXPIRY = "7d";
+const TOKEN_EXPIRY = "7d"; 
 
 export interface TokenPayload {
   userId: string;
