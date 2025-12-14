@@ -26,15 +26,12 @@ export async function GET(request: Request) {
     const payload = await verifyAuth();
 
     if (!payload) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get expert profile for this user
     const expertProfile = await prisma.expertProfile.findUnique({
-      where: { userId: payload.userId }
+      where: { userId: payload.userId },
     });
 
     if (!expertProfile) {
@@ -44,13 +41,11 @@ export async function GET(request: Request) {
       );
     }
 
-    
-
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
 
     const whereClause: any = {
-      expertId: expertProfile.id
+      expertId: expertProfile.id,
     };
 
     if (status) {
@@ -61,11 +56,12 @@ export async function GET(request: Request) {
     const bookings = await prisma.booking.findMany({
       where: whereClause,
       include: {
-        user: true
+        user: true,
+        call: true,
       },
       orderBy: {
-        slotStart: "asc"
-      }
+        slotStart: "asc",
+      },
     });
 
     return NextResponse.json(bookings);

@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../app/generated/prisma"
 }
 
 datasource db {
@@ -21,7 +20,7 @@ model User {
   avatar        String?
   expertProfile ExpertProfile?
   bookings      Booking[]
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -34,17 +33,17 @@ model ExpertProfile {
   id             String   @id @default(cuid())
   userId         String   @unique
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   field          String
   bio            String
   ratePerMin     Int
   status         String   @default("pending")
   availability   Json     @default("{}")
-  
+
   cvUrl          String?
   certificateUrl String?
   bookings       Booking[]
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -58,18 +57,18 @@ model Booking {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expertId  String
   expert    ExpertProfile @relation(fields: [expertId], references: [id], onDelete: Cascade)
-  
+
   slotStart DateTime
   slotEnd   DateTime
   callLink  String?
   status    String   @default("pending")
   cost      Int
-  
+
   call      Call?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([userId])
   @@index([expertId])
   @@index([status])
@@ -80,16 +79,16 @@ model Call {
   id              String   @id @default(cuid())
   bookingId       String   @unique
   booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  
+
   startTime       DateTime
   endTime         DateTime?
   durationMinutes Int      @default(0)
   amountCharged   Int      @default(0)
   rating          Int?
   review          String?
-  
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  
+
   @@index([bookingId])
 }

@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     }
 
     // Check if user with this wallet exists
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { walletAddress: address },
       select: {
         id: true,
