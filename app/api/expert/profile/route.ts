@@ -146,8 +146,21 @@ export async function PUT(request: Request) {
     if (field) expertUpdateData.field = field;
     if (bio) expertUpdateData.bio = bio;
     if (ratePerMin) expertUpdateData.ratePerMin = parseInt(ratePerMin);
-    if (availability !== undefined)
+
+    // Only allow updating availability if approved
+    if (availability !== undefined) {
+      const currentExpert = await prisma.expertProfile.findUnique({
+        where: { userId: userId },
+      });
+
+      if (currentExpert?.status !== "approved") {
+        return NextResponse.json(
+          { error: "Account must be approved to update availability" },
+          { status: 403 }
+        );
+      }
       expertUpdateData.availability = availability;
+    }
 
     // Update expert profile
     const updatedExpert = await prisma.expertProfile.update({

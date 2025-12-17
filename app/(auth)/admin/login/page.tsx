@@ -22,30 +22,48 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { isLoading } = useAuth();
+  const { isLoading, setUser } = useAuth();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    const success = setTimeout(() => {
-      return true;
-    }, 2000); //await login(formData.email, formData.password, "admin")
-
-    if (success) {
-      toast({
-        title: "Admin access granted",
-        description: "Welcome to the admin dashboard.",
+    try {
+      const response = await fetch("/api/auth/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-      router.push("/admin");
-    } else {
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        toast({
+          title: "Admin access granted",
+          description: "Welcome to the admin dashboard.",
+        });
+        router.push("/admin");
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "Access denied",
+          description: errorData.error || "Invalid admin credentials.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Login error:", error);
       toast({
-        title: "Access denied",
-        description: "Invalid admin credentials.",
+        title: "Error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -113,9 +131,9 @@ export default function AdminLoginPage() {
                 type="submit"
                 className="w-full cursor-pointer"
                 variant="destructive"
-                disabled={isLoading}
+                disabled={isSubmitting}
               >
-                {isLoading ? (
+                {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Authenticating...
@@ -136,7 +154,7 @@ export default function AdminLoginPage() {
         </Card>
 
         <p className="text-xs text-muted-foreground text-center mt-4">
-          <Link href="/login" className="text-primary hover:underline">
+          <Link href="/" className="text-primary hover:underline">
             Back to regular login
           </Link>
         </p>

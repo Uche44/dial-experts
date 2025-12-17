@@ -1,71 +1,86 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Star, Filter, SlidersHorizontal, Loader2 } from "lucide-react"
-import { mockCategories } from "@/lib/mock-data"
-import type { Expert } from "@/lib/types"
-import { useExperts } from "@/context/experts-context"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search, Star, Filter, SlidersHorizontal, Loader2 } from "lucide-react";
+
+import { useExperts } from "@/context/experts-context";
 
 export default function ExpertsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedField, setSelectedField] = useState<string>("all")
-  const [sortBy, setSortBy] = useState<string>("rating")
-  const {experts, setExperts} = useExperts()
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedField, setSelectedField] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("rating");
+  const { experts, setExperts } = useExperts();
   // const [experts, setExperts] = useState<Expert[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch experts from API
+  const [categories, setCategories] = useState<any[]>([]);
+
+  // Fetch experts and categories from API
   useEffect(() => {
-    async function fetchExperts() {
+    async function fetchData() {
       try {
-        setLoading(true)
-        const response = await fetch("/api/experts")
-        if (!response.ok) {
-          throw new Error("Failed to fetch experts")
+        setLoading(true);
+        const [expertsRes, categoriesRes] = await Promise.all([
+          fetch("/api/experts"),
+          fetch("/api/categories"),
+        ]);
+
+        if (!expertsRes.ok || !categoriesRes.ok) {
+          throw new Error("Failed to fetch data");
         }
-        const data = await response.json()
-        setExperts(data)
-        console.log('Experts:', data)
+
+        const expertsData = await expertsRes.json();
+        const categoriesData = await categoriesRes.json();
+
+        setExperts(expertsData);
+        setCategories(categoriesData);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred")
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchExperts()
-  }, [])
+    fetchData();
+  }, []);
 
   const filteredExperts = experts
     .filter((expert) => {
       const matchesSearch =
         expert.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         expert.field.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        expert.bio.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesField = selectedField === "all" || expert.field === selectedField
-      return matchesSearch && matchesField && expert.status === "pending"
+        expert.bio.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesField =
+        selectedField === "all" || expert.field === selectedField;
+      return matchesSearch && matchesField && expert.status === "approved";
     })
     .sort((a, b) => {
       switch (sortBy) {
         case "rating":
-          return (b.rating || 0) - (a.rating || 0)
+          return (b.rating || 0) - (a.rating || 0);
         case "price-low":
-          return a.ratePerMin - b.ratePerMin
+          return a.ratePerMin - b.ratePerMin;
         case "price-high":
-          return b.ratePerMin - a.ratePerMin
+          return b.ratePerMin - a.ratePerMin;
         case "reviews":
-          return (b.totalReviews || 0) - (a.totalReviews || 0)
+          return (b.totalReviews || 0) - (a.totalReviews || 0);
         default:
-          return 0  
+          return 0;
       }
-    })
+    });
 
   return (
     <div className="min-h-screen py-12">
@@ -76,7 +91,8 @@ export default function ExpertsPage() {
             Find Your <span className="gradient-text">Expert</span>
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Browse our network of verified Web3 experts. Filter by specialization and book a consultation today.
+            Browse our network of verified Web3 experts. Filter by
+            specialization and book a consultation today.
           </p>
         </div>
 
@@ -99,7 +115,7 @@ export default function ExpertsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Fields</SelectItem>
-                {mockCategories.map((cat) => (
+                {categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.name}>
                     {cat.name}
                   </SelectItem>
@@ -125,7 +141,9 @@ export default function ExpertsPage() {
         {loading && (
           <div className="flex justify-center items-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <span className="ml-3 text-muted-foreground">Loading experts...</span>
+            <span className="ml-3 text-muted-foreground">
+              Loading experts...
+            </span>
           </div>
         )}
 
@@ -133,10 +151,7 @@ export default function ExpertsPage() {
         {error && (
           <div className="text-center py-20">
             <p className="text-red-500 mb-4">Error: {error}</p>
-            <Button
-              variant="outline"
-              onClick={() => window.location.reload()}
-            >
+            <Button variant="outline" onClick={() => window.location.reload()}>
               Retry
             </Button>
           </div>
@@ -145,71 +160,93 @@ export default function ExpertsPage() {
         {/* Results count */}
         {!loading && !error && (
           <p className="text-sm text-muted-foreground mb-6">
-            Showing {filteredExperts.length} expert{filteredExperts.length !== 1 ? "s" : ""}
+            Showing {filteredExperts.length} expert
+            {filteredExperts.length !== 1 ? "s" : ""}
           </p>
         )}
 
         {/* Experts Grid */}
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredExperts.map((expert) => (
-            <Link key={expert.id} href={`/experts/${expert.id}`} className="group">
-              <div className="h-full p-6 rounded-xl glass border border-border/50 hover:border-primary/50 transition-all duration-300">
-                {/* Expert Header */}
-                <div className="flex items-start gap-4 mb-4">
-                  <Avatar className="w-16 h-16 border-2 border-primary/30">
-                    <AvatarImage src={expert.user.avatar || "/placeholder.svg"} alt={expert.user.name} />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                      {expert.user.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
-                      {expert.user.name}
-                    </h3>
-                    <Badge variant="secondary" className="mt-1">
-                      {expert.field}
-                    </Badge>
-                    <div className="flex items-center gap-1 mt-2">
-                      <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                      <span className="text-sm font-medium">{expert.rating}</span>
-                      <span className="text-xs text-muted-foreground">({expert.totalReviews} reviews)</span>
+            {filteredExperts.map((expert) => (
+              <Link
+                key={expert.id}
+                href={`/experts/${expert.id}`}
+                className="group"
+              >
+                <div className="h-full p-6 rounded-xl glass border border-border/50 hover:border-primary/50 transition-all duration-300">
+                  {/* Expert Header */}
+                  <div className="flex items-start gap-4 mb-4">
+                    <Avatar className="w-16 h-16 border-2 border-primary/30">
+                      <AvatarImage
+                        src={expert.user.avatar || "/placeholder.svg"}
+                        alt={expert.user.name}
+                      />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                        {expert.user.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
+                        {expert.user.name}
+                      </h3>
+                      <Badge variant="secondary" className="mt-1">
+                        {expert.field}
+                      </Badge>
+                      <div className="flex items-center gap-1 mt-2">
+                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        <span className="text-sm font-medium">
+                          {expert.rating}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          ({expert.totalReviews} reviews)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+                    {expert.bio}
+                  </p>
+
+                  {/* Stats */}
+                  <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Completed:</span>{" "}
+                      <span className="font-medium">
+                        {expert.completedCalls} calls
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-lg font-bold text-primary">
+                        ₦{expert.ratePerMin}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        /min
+                      </span>
                     </div>
                   </div>
                 </div>
-
-                {/* Bio */}
-                <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{expert.bio}</p>
-
-                {/* Stats */}
-                <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Completed:</span>{" "}
-                    <span className="font-medium">{expert.completedCalls} calls</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-lg font-bold text-primary">₦{expert.ratePerMin}</span>
-                    <span className="text-sm text-muted-foreground">/min</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
           </div>
         )}
 
         {!loading && !error && filteredExperts.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-muted-foreground">No experts found matching your criteria.</p>
+            <p className="text-muted-foreground">
+              No experts found matching your criteria.
+            </p>
             <Button
               variant="link"
               className="text-primary mt-2"
               onClick={() => {
-                setSearchQuery("")
-                setSelectedField("all")
+                setSearchQuery("");
+                setSelectedField("all");
               }}
             >
               Clear filters
@@ -218,5 +255,5 @@ export default function ExpertsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

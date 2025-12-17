@@ -19,7 +19,7 @@ export default function UserDashboard() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push("/login")
+      router.push("/")
     }
   }, [isAuthenticated, isLoading, router])
 
@@ -30,7 +30,7 @@ export default function UserDashboard() {
       try {
         setIsLoadingBookings(true)
         const response = await fetch("/api/bookings?status=confirmed,pending")
-        
+
         if (response.ok) {
           const data = await response.json()
           setBookings(data)

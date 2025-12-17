@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -9,17 +10,37 @@ datasource db {
 enum UserRole {
   user
   expert
+  admin
+}
+
+enum ExpertStatus {
+  pending
+  approved
+  rejected
+}
+
+model Admin {
+  id          String    @id @default(cuid())
+  username    String    @unique
+  password    String
+  email       String    @unique
+  role        UserRole  @default(admin)
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
-  id            String   @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
-  email         String   @unique
-  walletAddress String?  @unique
-  role          UserRole @default(user)
+  email         String         @unique
+  walletAddress String?        @unique
+  role          UserRole       @default(user)
   avatar        String?
   expertProfile ExpertProfile?
   bookings      Booking[]
+  transactions  Transaction[] @relation("UserTransactions")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,19 +51,20 @@ model User {
 }
 
 model ExpertProfile {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  field          String
-  bio            String
-  ratePerMin     Int
-  status         String   @default("pending")
-  availability   Json     @default("{}")
+  field        String
+  bio          String
+  ratePerMin   Int
+  status       ExpertStatus @default(pending)
+  availability Json         @default("{}")
 
   cvUrl          String?
   certificateUrl String?
   bookings       Booking[]
+  transactions   Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -52,11 +74,11 @@ model ExpertProfile {
 }
 
 model Booking {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expertId  String
-  expert    ExpertProfile @relation(fields: [expertId], references: [id], onDelete: Cascade)
+  id       String        @id @default(cuid())
+  userId   String
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expertId String
+  expert   ExpertProfile @relation(fields: [expertId], references: [id], onDelete: Cascade)
 
   slotStart DateTime
   slotEnd   DateTime
@@ -65,6 +87,7 @@ model Booking {
   cost      Int
 
   call      Call?
+  transactions Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -76,19 +99,73 @@ model Booking {
 }
 
 model Call {
-  id              String   @id @default(cuid())
-  bookingId       String   @unique
-  booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   startTime       DateTime
   endTime         DateTime?
-  durationMinutes Int      @default(0)
-  amountCharged   Int      @default(0)
+  durationMinutes Int       @default(0)
+  amountCharged   Int       @default(0)
   rating          Int?
   review          String?
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([bookingId])
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  bookingId     String?
+  booking       Booking? @relation(fields: [bookingId], references: [id])
+
+  userId        String
+  user          User     @relation("UserTransactions", fields: [userId], references: [id])
+
+  expertId      String?
+  expert        ExpertProfile? @relation(fields: [expertId], references: [id])
+
+  amount        Int
+  platformFee   Int
+  expertAmount  Int
+
+  type          TransactionType
+  status        TransactionStatus @default(pending)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expertId])
+  @@index([bookingId])
+}
+
+model SystemSettings {
+  id                    String   @id @default(cuid())
+  platformFeePercentage Float    @default(5.0)
+  minCallDuration       Int      @default(15)
+  maxCallDuration       Int      @default(60)
+
+  updatedAt             DateTime @updatedAt
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+}
+
+enum TransactionType {
+  payment
+  payout
+  refund
+}
+
+enum TransactionStatus {
+  pending
+  completed
+  failed
 }

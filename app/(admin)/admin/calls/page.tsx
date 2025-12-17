@@ -1,29 +1,79 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { mockCalls } from "@/lib/mock-data"
-import { Phone, Search, Clock, Star } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { mockCalls } from "@/lib/mock-data";
+import { Phone, Search, Clock, Star } from "lucide-react";
 
 export default function AdminCallsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [calls, setCalls] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredCalls = mockCalls.filter(
+  useEffect(() => {
+    const fetchCalls = async () => {
+      try {
+        const response = await fetch("/api/admin/calls");
+        if (response.ok) {
+          const data = await response.json();
+          setCalls(data.calls);
+        }
+      } catch (error) {
+        console.error("Error fetching calls:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCalls();
+  }, []);
+
+  const filteredCalls = calls.filter(
     (call) =>
-      call.booking?.user?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      call.booking?.expert?.user.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      call.booking?.user?.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      call.booking?.expert?.user.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+  );
 
-  const totalMinutes = mockCalls.reduce((acc, c) => acc + c.durationMinutes, 0)
-  const avgDuration = Math.round(totalMinutes / mockCalls.length)
-  const avgRating = (
-    mockCalls.filter((c) => c.rating).reduce((acc, c) => acc + (c.rating || 0), 0) /
-    mockCalls.filter((c) => c.rating).length
-  ).toFixed(1)
+  const totalMinutes = calls.reduce((acc, c) => acc + c.durationMinutes, 0);
+  const avgDuration = calls.length
+    ? Math.round(totalMinutes / calls.length)
+    : 0;
+  const ratedCalls = calls.filter((c) => c.rating);
+  const avgRating = ratedCalls.length
+    ? (
+        ratedCalls.reduce((acc, c) => acc + (c.rating || 0), 0) /
+        ratedCalls.length
+      ).toFixed(1)
+    : "0.0";
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-16 lg:pt-0">
@@ -53,7 +103,7 @@ export default function AdminCallsPage() {
           <Card className="glass border-border/50">
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground">Total Calls</p>
-              <p className="text-2xl font-bold">{mockCalls.length}</p>
+              <p className="text-2xl font-bold">{calls.length}</p>
             </CardContent>
           </Card>
           <Card className="glass border-border/50">
@@ -83,7 +133,9 @@ export default function AdminCallsPage() {
         <Card className="glass border-border/50">
           <CardHeader>
             <CardTitle>All Calls</CardTitle>
-            <CardDescription>{filteredCalls.length} completed calls</CardDescription>
+            <CardDescription>
+              {filteredCalls.length} completed calls
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -103,11 +155,15 @@ export default function AdminCallsPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="w-8 h-8">
-                          <AvatarImage src={call.booking?.user?.avatar || "/placeholder.svg"} />
+                          <AvatarImage
+                            src={
+                              call.booking?.user?.avatar || "/placeholder.svg"
+                            }
+                          />
                           <AvatarFallback>
                             {call.booking?.user?.name
                               .split(" ")
-                              .map((n) => n[0])
+                              .map((n: string) => n[0])
                               .join("")}
                           </AvatarFallback>
                         </Avatar>
@@ -117,11 +173,16 @@ export default function AdminCallsPage() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="w-8 h-8">
-                          <AvatarImage src={call.booking?.expert?.user.avatar || "/placeholder.svg"} />
+                          <AvatarImage
+                            src={
+                              call.booking?.expert?.user.avatar ||
+                              "/placeholder.svg"
+                            }
+                          />
                           <AvatarFallback>
                             {call.booking?.expert?.user.name
                               .split(" ")
-                              .map((n) => n[0])
+                              .map((n: string) => n[0])
                               .join("")}
                           </AvatarFallback>
                         </Avatar>
@@ -134,7 +195,9 @@ export default function AdminCallsPage() {
                         {call.durationMinutes} min
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">₦{call.amountCharged.toLocaleString()}</TableCell>
+                    <TableCell className="font-medium">
+                      ₦{call.amountCharged.toLocaleString()}
+                    </TableCell>
                     <TableCell>
                       {call.rating ? (
                         <div className="flex items-center gap-1">
@@ -142,7 +205,9 @@ export default function AdminCallsPage() {
                             <Star
                               key={i}
                               className={`w-3 h-3 ${
-                                i < call.rating! ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground"
+                                i < call.rating!
+                                  ? "text-yellow-500 fill-yellow-500"
+                                  : "text-muted-foreground"
                               }`}
                             />
                           ))}
@@ -162,5 +227,5 @@ export default function AdminCallsPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

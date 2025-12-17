@@ -1,37 +1,86 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { useAuth } from "@/lib/auth-context"
-import { mockExperts, mockUsers, mockTransactions, mockCalls } from "@/lib/mock-data"
-import { Users, Briefcase, DollarSign, Phone, TrendingUp, AlertCircle, ArrowRight } from "lucide-react"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
+import {
+  Users,
+  Briefcase,
+  DollarSign,
+  Phone,
+  TrendingUp,
+  AlertCircle,
+  ArrowRight,
+} from "lucide-react";
 
 export default function AdminDashboard() {
-  const router = useRouter()
-  const { user, isAuthenticated, isLoading } = useAuth()
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const [stats, setStats] = useState({
+    pendingExperts: 0,
+    totalUsers: 0,
+    activeExperts: 0,
+    totalRevenue: 0,
+    platformFees: 0,
+    totalCalls: 0,
+    totalExperts: 0,
+    totalTransactions: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== "admin")) {
-      router.push("/admin/login")
+    if (!authLoading && (!isAuthenticated || user?.role !== "admin")) {
+      router.push("/admin/login");
     }
-  }, [isAuthenticated, isLoading, user, router])
+  }, [isAuthenticated, authLoading, user, router]);
 
-  if (isLoading || !user) {
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const response = await fetch("/api/admin/stats");
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data);
+        }
+      } catch (error) {
+        console.error("Error fetching admin stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (isAuthenticated && user?.role === "admin") {
+      fetchStats();
+    }
+  }, [isAuthenticated, user]);
+
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
-    )
+    );
   }
 
-  const pendingExperts = mockExperts.filter((e) => e.status === "pending").length
-  const totalRevenue = mockTransactions
-    .filter((t) => t.type === "payment" && t.status === "completed")
-    .reduce((acc, t) => acc + t.amount, 0)
-  const platformFees = Math.round(totalRevenue * 0.05)
+  const {
+    pendingExperts,
+    totalUsers,
+    activeExperts,
+    totalRevenue,
+    platformFees,
+    totalCalls,
+    totalExperts,
+    totalTransactions,
+  } = stats;
 
   return (
     <div className="min-h-screen pt-16 lg:pt-0">
@@ -39,7 +88,9 @@ export default function AdminDashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Platform overview and management</p>
+          <p className="text-muted-foreground mt-1">
+            Platform overview and management
+          </p>
         </div>
 
         {/* Alerts */}
@@ -50,9 +101,12 @@ export default function AdminDashboard() {
                 <AlertCircle className="w-5 h-5 text-yellow-500" />
                 <div>
                   <p className="font-medium">
-                    {pendingExperts} expert application{pendingExperts > 1 ? "s" : ""} pending review
+                    {pendingExperts} expert application
+                    {pendingExperts > 1 ? "s" : ""} pending review
                   </p>
-                  <p className="text-sm text-muted-foreground">New experts are waiting for approval</p>
+                  <p className="text-sm text-muted-foreground">
+                    New experts are waiting for approval
+                  </p>
                 </div>
               </div>
               <Button asChild size="sm">
@@ -69,7 +123,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Users</p>
-                  <p className="text-2xl font-bold">{mockUsers.filter((u) => u.role === "user").length}</p>
+                  <p className="text-2xl font-bold">{totalUsers}</p>
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Users className="w-6 h-6 text-primary" />
@@ -86,14 +140,18 @@ export default function AdminDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Active Experts</p>
-                  <p className="text-2xl font-bold">{mockExperts.filter((e) => e.status === "approved").length}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Active Experts
+                  </p>
+                  <p className="text-2xl font-bold">{activeExperts}</p>
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
                   <Briefcase className="w-6 h-6 text-accent" />
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-2">{pendingExperts} pending approval</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                {pendingExperts} pending approval
+              </p>
             </CardContent>
           </Card>
 
@@ -102,13 +160,17 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Revenue</p>
-                  <p className="text-2xl font-bold gradient-text">₦{totalRevenue.toLocaleString()}</p>
+                  <p className="text-2xl font-bold gradient-text">
+                    ₦{totalRevenue.toLocaleString()}
+                  </p>
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-chart-3/10 flex items-center justify-center">
                   <DollarSign className="w-6 h-6 text-chart-3" />
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-2">Platform fees: ₦{platformFees.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Platform fees: ₦{platformFees.toLocaleString()}
+              </p>
             </CardContent>
           </Card>
 
@@ -117,7 +179,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Calls</p>
-                  <p className="text-2xl font-bold">{mockCalls.length}</p>
+                  <p className="text-2xl font-bold">{totalCalls}</p>
                 </div>
                 <div className="w-12 h-12 rounded-lg bg-yellow-500/10 flex items-center justify-center">
                   <Phone className="w-6 h-6 text-yellow-500" />
@@ -137,11 +199,15 @@ export default function AdminDashboard() {
                   <Briefcase className="w-5 h-5 text-primary" />
                   Expert Management
                 </CardTitle>
-                <CardDescription>Review applications, manage expert accounts</CardDescription>
+                <CardDescription>
+                  Review applications, manage expert accounts
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">{mockExperts.length} total experts</span>
+                  <span className="text-sm text-muted-foreground">
+                    {totalExperts} total experts
+                  </span>
                   <ArrowRight className="w-4 h-4 text-muted-foreground" />
                 </div>
               </CardContent>
@@ -160,7 +226,7 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
-                    {mockUsers.filter((u) => u.role === "user").length} registered users
+                    {totalUsers} registered users
                   </span>
                   <ArrowRight className="w-4 h-4 text-muted-foreground" />
                 </div>
@@ -175,11 +241,15 @@ export default function AdminDashboard() {
                   <DollarSign className="w-5 h-5 text-primary" />
                   Transactions
                 </CardTitle>
-                <CardDescription>View all platform transactions</CardDescription>
+                <CardDescription>
+                  View all platform transactions
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">{mockTransactions.length} transactions</span>
+                  <span className="text-sm text-muted-foreground">
+                    {totalTransactions} transactions
+                  </span>
                   <ArrowRight className="w-4 h-4 text-muted-foreground" />
                 </div>
               </CardContent>
@@ -188,5 +258,5 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

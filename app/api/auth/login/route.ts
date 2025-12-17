@@ -30,21 +30,18 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Generate JWT token
-    const token = generateToken(user.id, user.walletAddress!, user.role);
+    const token = generateToken(user.id, user.role, user.walletAddress!);
 
     // Set token in httpOnly cookie
     (await cookies()).set("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, 
+      maxAge: 60 * 60 * 24 * 7,
       path: "/",
     });
 

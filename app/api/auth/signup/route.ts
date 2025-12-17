@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
-import { uploadToCloudinary } from "@/lib/cloudinary-upload";
+import { uploadFile } from "@/lib/file-upload";
 import { UserRole } from "@prisma/client";
 import { generateToken } from "@/lib/jwt";
 
@@ -63,12 +63,12 @@ export async function POST(request: Request) {
       let certificateUrl = null;
 
       if (cvFile && cvFile.size > 0) {
-        cvUrl = await uploadToCloudinary(cvFile, "dialexperts/resumes");
+        cvUrl = await uploadFile(cvFile, "uploads/resumes");
       }
       if (certificateFile && certificateFile.size > 0) {
-        certificateUrl = await uploadToCloudinary(
+        certificateUrl = await uploadFile(
           certificateFile,
-          "dialexperts/certificates"
+          "uploads/certificates"
         );
       }
 
@@ -98,8 +98,8 @@ export async function POST(request: Request) {
 
       const token = generateToken(
         newUser.id,
-        newUser.walletAddress!,
-        newUser.role
+        newUser.role,
+        newUser.walletAddress!
       );
 
       // Set token in httpOnly cookie
@@ -147,8 +147,8 @@ export async function POST(request: Request) {
 
       const token = generateToken(
         newUser.id,
-        newUser.walletAddress!,
-        newUser.role
+        newUser.role,
+        newUser.walletAddress!
       );
 
       // Set token in httpOnly cookie

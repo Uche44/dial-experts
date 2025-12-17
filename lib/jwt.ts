@@ -1,20 +1,29 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this-in-production";
-const TOKEN_EXPIRY = "7d"; 
+const JWT_SECRET =
+  process.env.JWT_SECRET || "your-secret-key-change-this-in-production";
+const TOKEN_EXPIRY = "7d";
 
 export interface TokenPayload {
   userId: string;
-  walletAddress: string;
+  walletAddress?: string;
+  email?: string;
   role: string;
 }
 
-export function generateToken(userId: string, walletAddress: string, role: string): string {
+export function generateToken(
+  userId: string,
+  role: string,
+  walletAddress?: string,
+  email?: string
+): string {
   const payload: TokenPayload = {
     userId,
-    walletAddress,
     role,
   };
+
+  if (walletAddress) payload.walletAddress = walletAddress;
+  if (email) payload.email = email;
 
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: TOKEN_EXPIRY,
