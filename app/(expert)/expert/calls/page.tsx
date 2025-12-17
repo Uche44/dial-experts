@@ -1,46 +1,61 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { History, Calendar, Clock, Star, Video, Loader2 } from "lucide-react"
-import type { Booking } from "@/lib/types"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { History, Calendar, Clock, Star, Video, Loader2 } from "lucide-react";
+import type { Booking } from "@/lib/types";
 
 export default function ExpertCallsPage() {
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [status, setStatus] = useState<string>("");
 
   useEffect(() => {
-    const fetchBookings = async () => {
+    const fetchData = async () => {
       try {
-        setIsLoading(true)
-        const response = await fetch("/api/expert/bookings")
-        
-        if (response.ok) {
-          const data = await response.json()
-          setBookings(data)
+        setIsLoading(true);
+        const [bookingsRes, profileRes] = await Promise.all([
+          fetch("/api/expert/bookings"),
+          fetch("/api/expert/profile"),
+        ]);
+
+        if (bookingsRes.ok) {
+          const data = await bookingsRes.json();
+          setBookings(data);
+        }
+
+        if (profileRes.ok) {
+          const data = await profileRes.json();
+          setStatus(data.status);
         }
       } catch (error) {
-        console.error("Error fetching bookings:", error)
+        console.error("Error fetching data:", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchBookings()
-  }, [])
+    fetchData();
+  }, []);
 
-  const upcomingBookings = bookings.filter(b => 
-    new Date(b.slotStart) > new Date() && 
-    (b.status === "confirmed" || b.status === "pending")
-  )
-  const pastBookings = bookings.filter(b => 
-    new Date(b.slotStart) <= new Date() && 
-    b.status === "completed"
-  )
+  const upcomingBookings = bookings.filter(
+    (b) =>
+      new Date(b.slotStart) > new Date() &&
+      (b.status === "confirmed" || b.status === "pending")
+  );
+  const pastBookings = bookings.filter(
+    (b) => new Date(b.slotStart) <= new Date() && b.status === "completed"
+  );
 
   return (
     <div className="min-h-screen pt-16 lg:pt-0">
@@ -50,9 +65,20 @@ export default function ExpertCallsPage() {
           <History className="w-8 h-8 text-primary" />
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold">Calls</h1>
-            <p className="text-muted-foreground">Manage your upcoming and past consultations</p>
+            <p className="text-muted-foreground">
+              Manage your upcoming and past consultations
+            </p>
           </div>
         </div>
+
+        {status && status !== "approved" && (
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
+            <p className="text-yellow-500 font-medium">
+              Your account is currently {status}. You cannot receive new calls
+              until approved.
+            </p>
+          </div>
+        )}
 
         <Tabs defaultValue="upcoming" className="space-y-6">
           <TabsList>
@@ -70,7 +96,9 @@ export default function ExpertCallsPage() {
             <Card className="glass border-border/50">
               <CardHeader>
                 <CardTitle>Upcoming Consultations</CardTitle>
-                <CardDescription>Your scheduled calls with clients</CardDescription>
+                <CardDescription>
+                  Your scheduled calls with clients
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -87,7 +115,9 @@ export default function ExpertCallsPage() {
                       >
                         <div className="flex items-center gap-4">
                           <Avatar className="w-12 h-12">
-                            <AvatarImage src={booking.user?.avatar || "/placeholder.svg"} />
+                            <AvatarImage
+                              src={booking.user?.avatar || "/placeholder.svg"}
+                            />
                             <AvatarFallback>
                               {booking.user?.name
                                 .split(" ")
@@ -99,21 +129,37 @@ export default function ExpertCallsPage() {
                             <p className="font-medium">{booking.user?.name}</p>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Clock className="w-3 h-3" />
-                              {new Date(booking.slotStart).toLocaleDateString()} at{" "}
-                              {new Date(booking.slotStart).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {new Date(
+                                booking.slotStart
+                              ).toLocaleDateString()}{" "}
+                              at{" "}
+                              {new Date(booking.slotStart).toLocaleTimeString(
+                                [],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
                             </div>
-                            <p className="text-sm text-muted-foreground font-mono">{booking.user?.walletAddress}</p>
+                            <p className="text-sm text-muted-foreground font-mono">
+                              {booking.user?.walletAddress}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right">
-                            <Badge variant={booking.status === "confirmed" ? "default" : "secondary"}>
+                            <Badge
+                              variant={
+                                booking.status === "confirmed"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                            >
                               {booking.status}
                             </Badge>
-                            <p className="text-sm text-primary font-medium mt-1">₦{booking.cost}</p>
+                            <p className="text-sm text-primary font-medium mt-1">
+                              ₦{booking.cost}
+                            </p>
                           </div>
                           <Button className="bg-primary hover:bg-primary/90">
                             <Video className="w-4 h-4 mr-2" />
@@ -126,7 +172,9 @@ export default function ExpertCallsPage() {
                 ) : (
                   <div className="text-center py-12">
                     <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">No upcoming calls scheduled</p>
+                    <p className="text-muted-foreground">
+                      No upcoming calls scheduled
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -137,13 +185,17 @@ export default function ExpertCallsPage() {
             <Card className="glass border-border/50">
               <CardHeader>
                 <CardTitle>Past Consultations</CardTitle>
-                <CardDescription>Your completed calls and earnings</CardDescription>
+                <CardDescription>
+                  Your completed calls and earnings
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
                   <div className="text-center py-12">
                     <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-                    <p className="text-muted-foreground">Loading past calls...</p>
+                    <p className="text-muted-foreground">
+                      Loading past calls...
+                    </p>
                   </div>
                 ) : pastBookings.length > 0 ? (
                   <div className="space-y-4">
@@ -154,7 +206,9 @@ export default function ExpertCallsPage() {
                       >
                         <div className="flex items-center gap-4">
                           <Avatar className="w-12 h-12">
-                            <AvatarImage src={booking.user?.avatar || "/placeholder.svg"} />
+                            <AvatarImage
+                              src={booking.user?.avatar || "/placeholder.svg"}
+                            />
                             <AvatarFallback>
                               {booking.user?.name
                                 .split(" ")
@@ -165,13 +219,16 @@ export default function ExpertCallsPage() {
                           <div>
                             <p className="font-medium">{booking.user?.name}</p>
                             <p className="text-sm text-muted-foreground">
-                              {new Date(booking.slotStart).toLocaleDateString()} • 20 minutes
+                              {new Date(booking.slotStart).toLocaleDateString()}{" "}
+                              • 20 minutes
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <p className="font-semibold text-primary">₦{booking.cost}</p>
+                            <p className="font-semibold text-primary">
+                              ₦{booking.cost}
+                            </p>
                             <Badge variant="secondary">Completed</Badge>
                           </div>
                         </div>
@@ -190,5 +247,5 @@ export default function ExpertCallsPage() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

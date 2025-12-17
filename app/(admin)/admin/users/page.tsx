@@ -1,34 +1,83 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { mockUsers } from "@/lib/mock-data"
-import { useToast } from "@/hooks/use-toast"
-import { Users, Search, MoreHorizontal, Eye, Trash, Ban } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { mockUsers } from "@/lib/mock-data";
+import { useToast } from "@/hooks/use-toast";
+import { Users, Search, MoreHorizontal, Eye, Trash, Ban } from "lucide-react";
 
 export default function AdminUsersPage() {
-  const { toast } = useToast()
-  const [searchQuery, setSearchQuery] = useState("")
+  const { toast } = useToast();
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const users = mockUsers.filter((u) => u.role === "user")
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("/api/admin/users");
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data.users);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch users",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleAction = (userId: string, action: string) => {
     toast({
       title: `User ${action}`,
       description: `Action completed successfully.`,
-    })
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
   }
 
   return (
@@ -39,8 +88,12 @@ export default function AdminUsersPage() {
           <div className="flex items-center gap-3">
             <Users className="w-8 h-8 text-primary" />
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">User Management</h1>
-              <p className="text-muted-foreground">View and manage user accounts</p>
+              <h1 className="text-2xl sm:text-3xl font-bold">
+                User Management
+              </h1>
+              <p className="text-muted-foreground">
+                View and manage user accounts
+              </p>
             </div>
           </div>
           <div className="relative w-full sm:w-64">
@@ -58,7 +111,9 @@ export default function AdminUsersPage() {
         <Card className="glass border-border/50">
           <CardHeader>
             <CardTitle>All Users</CardTitle>
-            <CardDescription>{filteredUsers.length} registered users</CardDescription>
+            <CardDescription>
+              {filteredUsers.length} registered users
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -77,24 +132,34 @@ export default function AdminUsersPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar>
-                          <AvatarImage src={user.avatar || "/placeholder.svg"} />
+                          <AvatarImage
+                            src={user.avatar || "/placeholder.svg"}
+                          />
                           <AvatarFallback>
                             {user.name
                               .split(" ")
-                              .map((n) => n[0])
+                              .map((n: string) => n[0])
                               .join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {user.email}
+                          </p>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-sm">{user.walletAddress}</TableCell>
-                    <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell className="font-mono text-sm">
+                      {user.walletAddress || "N/A"}
+                    </TableCell>
                     <TableCell>
-                      <Badge className="bg-chart-3 text-chart-3-foreground">Active</Badge>
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className="bg-chart-3 text-chart-3-foreground">
+                        Active
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -104,11 +169,15 @@ export default function AdminUsersPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleAction(user.id, "viewed")}>
+                          <DropdownMenuItem
+                            onClick={() => handleAction(user.id, "viewed")}
+                          >
                             <Eye className="w-4 h-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleAction(user.id, "suspended")}>
+                          <DropdownMenuItem
+                            onClick={() => handleAction(user.id, "suspended")}
+                          >
                             <Ban className="w-4 h-4 mr-2 text-yellow-500" />
                             Suspend
                           </DropdownMenuItem>
@@ -130,5 +199,5 @@ export default function AdminUsersPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { mockCategories } from "@/lib/mock-data";
 
 type SignupRole = "user" | "expert";
 
@@ -69,6 +68,22 @@ export default function SignupForm({
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<SignupRole>(defaultRole);
   const [expertStep, setExpertStep] = useState(1);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/categories");
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const [userForm, setUserForm] = useState<UserFormData>({
     name: "",
@@ -139,14 +154,13 @@ export default function SignupForm({
       });
 
       const data = await response.json();
-      setUser(data.user)
+      setUser(data.user);
 
       if (!response.ok) {
         throw new Error(data.error || "Signup failed");
       }
 
       onComplete(activeTab);
-  
     } catch (error) {
       console.error("Signup error:", error);
       toast({
@@ -155,7 +169,7 @@ export default function SignupForm({
         variant: "destructive",
       });
     } finally {
-    //   loading(false);
+      //   loading(false);
     }
   };
 
@@ -178,11 +192,9 @@ export default function SignupForm({
       }
     >
       <div className="w-full  max-w-lg mx-auto px-4 py-12">
-
         <div className="scrollable-div relative bg-black">
           <Card className="glass border-border/50">
             <CardHeader className="text-center">
-
               <CardDescription>
                 Join DialExperts and start connecting with experts
               </CardDescription>
@@ -196,10 +208,7 @@ export default function SignupForm({
                 }}
               >
                 <TabsList className="grid grid-cols-2 mb-6">
-                  <TabsTrigger
-                    value="user"
-                    className="flex items-center gap-2"
-                  >
+                  <TabsTrigger value="user" className="flex items-center gap-2">
                     <User className="w-4 h-4" />
                     User
                   </TabsTrigger>
@@ -214,10 +223,7 @@ export default function SignupForm({
 
                 {/* User Signup Form */}
                 <TabsContent value="user">
-                  <form
-                    onSubmit={handleSubmit}
-                    className="space-y-4"
-                  >
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="user-name">Full Name</Label>
                       <Input
@@ -269,10 +275,7 @@ export default function SignupForm({
                   {/* Progress Steps */}
                   <div className="flex items-center justify-between mb-8">
                     {expertSteps.map((step, index) => (
-                      <div
-                        key={step.number}
-                        className="flex items-center"
-                      >
+                      <div key={step.number} className="flex items-center">
                         <div className="flex flex-col items-center">
                           <div
                             className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
@@ -306,10 +309,7 @@ export default function SignupForm({
                     ))}
                   </div>
 
-                  <form
-                    onSubmit={handleSubmit}
-                    className="space-y-4"
-                  >
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Step 1: Basic Account Info */}
                     {expertStep === 1 && (
                       <>
@@ -472,11 +472,8 @@ export default function SignupForm({
                               <SelectValue placeholder="Select your field" />
                             </SelectTrigger>
                             <SelectContent>
-                              {mockCategories.map((cat) => (
-                                <SelectItem
-                                  key={cat.id}
-                                  value={cat.name}
-                                >
+                              {categories.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.name}>
                                   {cat.name}
                                 </SelectItem>
                               ))}

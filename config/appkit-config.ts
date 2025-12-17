@@ -10,7 +10,7 @@ const projectId = process.env.NEXT_PUBLIC_APPKIT_PROJECT_ID;
 const metadata = {
   name: "AppKit",
   description: "DialExperts",
-  url: "https://example.com", 
+  url: "https://example.com",
   icons: ["https://avatars.githubusercontent.com/u/179229932"],
 };
 
@@ -18,7 +18,7 @@ export const appKit = createAppKit({
   adapters: [solanaWeb3JsAdapter],
   networks: [solana, solanaTestnet, solanaDevnet],
   metadata: metadata,
-  projectId,
+  projectId: projectId || "",
   features: {
     analytics: true,
   },

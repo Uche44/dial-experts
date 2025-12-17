@@ -9,6 +9,8 @@ import {
   useCallback,
 } from "react";
 import type { User } from "./types";
+import { useDisconnect } from "@reown/appkit/react";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   user: User | null;
@@ -23,6 +25,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { disconnect } = useDisconnect();
+  const router = useRouter();
 
   useEffect(() => {
     // Fetch user from token on mount
@@ -47,6 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       setUser(null);
+      await disconnect();
+      router.push(window.origin ? window.origin : "/");
     } catch (error) {
       console.error("Logout error:", error);
     }

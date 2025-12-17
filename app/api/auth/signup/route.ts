@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
-import { uploadToCloudinary } from "@/lib/cloudinary-upload";
-import { UserRole } from "@/app/generated/prisma/enums";
+import { uploadFile } from "@/lib/file-upload";
+import { UserRole } from "@prisma/client";
 import { generateToken } from "@/lib/jwt";
-
 
 export async function POST(request: Request) {
   try {
@@ -22,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     // Check if wallet exists
-    const existingWallet = await prisma.user.findUnique({
+    const existingWallet = await prisma.user.findFirst({
       where: { walletAddress },
     });
 
@@ -64,22 +63,22 @@ export async function POST(request: Request) {
       let certificateUrl = null;
 
       if (cvFile && cvFile.size > 0) {
-        cvUrl = await uploadToCloudinary(cvFile, "dialexperts/resumes");
+        cvUrl = await uploadFile(cvFile, "uploads/resumes");
       }
       if (certificateFile && certificateFile.size > 0) {
-        certificateUrl = await uploadToCloudinary(
+        certificateUrl = await uploadFile(
           certificateFile,
-          "dialexperts/certificates"
+          "uploads/certificates"
         );
       }
 
-      // Create expert 
+      // Create expert
       const newUser = await prisma.user.create({
         data: {
           name,
           email,
           walletAddress,
-          role: role as UserRole, 
+          role: role as UserRole,
           expertProfile: {
             create: {
               field,
@@ -97,15 +96,18 @@ export async function POST(request: Request) {
         },
       });
 
-    
-      const token = generateToken(newUser.id, newUser.walletAddress!, newUser.role);
+      const token = generateToken(
+        newUser.id,
+        newUser.role,
+        newUser.walletAddress!
+      );
 
       // Set token in httpOnly cookie
       (await cookies()).set("auth_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, 
+        maxAge: 60 * 60 * 24 * 7,
         path: "/",
       });
 
@@ -131,7 +133,7 @@ export async function POST(request: Request) {
           name,
           email,
           walletAddress,
-          role: role as UserRole, 
+          role: role as UserRole,
         },
         select: {
           id: true,
@@ -143,15 +145,18 @@ export async function POST(request: Request) {
         },
       });
 
-     
-      const token = generateToken(newUser.id, newUser.walletAddress!, newUser.role);
+      const token = generateToken(
+        newUser.id,
+        newUser.role,
+        newUser.walletAddress!
+      );
 
       // Set token in httpOnly cookie
       (await cookies()).set("auth_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, 
+        maxAge: 60 * 60 * 24 * 7,
         path: "/",
       });
 

@@ -26,10 +26,7 @@ export async function POST(request: Request) {
     const payload = await verifyAuth();
 
     if (!payload) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -42,7 +39,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log('Prisma client:', prisma ? 'OK' : 'UNDEFINED');
+    console.log("Prisma client:", prisma ? "OK" : "UNDEFINED");
 
     // check slot is in the future
     const slotStartDate = new Date(slotStart);
@@ -59,20 +56,26 @@ export async function POST(request: Request) {
     // expert profile to check availability and rate
     const expert = await prisma.expertProfile.findUnique({
       where: { id: expertId },
-      include: { user: true }
+      include: { user: true },
     });
 
     if (!expert) {
+      return NextResponse.json({ error: "Expert not found" }, { status: 404 });
+    }
+
+    if (expert.status !== "approved") {
       return NextResponse.json(
-        { error: "Expert not found" },
-        { status: 404 }
+        { error: "Expert is not available for bookings" },
+        { status: 403 }
       );
     }
 
     // Check if the time slot is within expert's availability
-    const dayName = slotStartDate.toLocaleDateString("en-US", { weekday: "long" });
+    const dayName = slotStartDate.toLocaleDateString("en-US", {
+      weekday: "long",
+    });
     const availability = expert.availability as any;
-    
+
     if (!availability || !availability[dayName]) {
       return NextResponse.json(
         { error: "Expert is not available on this day" },
@@ -82,8 +85,11 @@ export async function POST(request: Request) {
 
     const dayAvailability = availability[dayName];
     const slotTime = slotStartDate.toTimeString().slice(0, 5); // HH:MM format
-    
-    if (slotTime < dayAvailability.startTime || slotTime >= dayAvailability.endTime) {
+
+    if (
+      slotTime < dayAvailability.startTime ||
+      slotTime >= dayAvailability.endTime
+    ) {
       return NextResponse.json(
         { error: "Time slot is outside expert's available hours" },
         { status: 400 }
@@ -95,29 +101,29 @@ export async function POST(request: Request) {
       where: {
         expertId: expertId,
         status: {
-          in: ["pending", "confirmed", "in-progress"]
+          in: ["pending", "confirmed", "in-progress"],
         },
         OR: [
           {
             AND: [
               { slotStart: { lte: slotStartDate } },
-              { slotEnd: { gt: slotStartDate } }
-            ]
+              { slotEnd: { gt: slotStartDate } },
+            ],
           },
           {
             AND: [
               { slotStart: { lt: slotEndDate } },
-              { slotEnd: { gte: slotEndDate } }
-            ]
+              { slotEnd: { gte: slotEndDate } },
+            ],
           },
           {
             AND: [
               { slotStart: { gte: slotStartDate } },
-              { slotEnd: { lte: slotEndDate } }
-            ]
-          }
-        ]
-      }
+              { slotEnd: { lte: slotEndDate } },
+            ],
+          },
+        ],
+      },
     });
 
     if (conflictingBooking) {
@@ -131,24 +137,56 @@ export async function POST(request: Request) {
     const durationMinutes = 20;
     const cost = expert.ratePerMin * durationMinutes;
 
-    // Create booking
-    const booking = await prisma.booking.create({
-      data: {
-        userId: payload.userId,
-        expertId: expertId,
-        slotStart: slotStartDate,
-        slotEnd: slotEndDate,
-        cost: cost,
-        status: "confirmed"
-      },
-      include: {
-        user: true,
-        expert: {
-          include: {
-            user: true
-          }
-        }
-      }
+    // Get system settings for platform fee
+    let settings = await prisma.systemSettings.findFirst();
+    if (!settings) {
+      settings = await prisma.systemSettings.create({
+        data: {
+          platformFeePercentage: 5.0,
+        },
+      });
+    }
+
+    const platformFee = Math.round(
+      cost * (settings.platformFeePercentage / 100)
+    );
+    const expertAmount = cost - platformFee;
+
+    // Create booking and transaction in a transaction
+    const booking = await prisma.$transaction(async (tx) => {
+      const newBooking = await tx.booking.create({
+        data: {
+          userId: payload.userId,
+          expertId: expertId,
+          slotStart: slotStartDate,
+          slotEnd: slotEndDate,
+          cost: cost,
+          status: "confirmed",
+        },
+        include: {
+          user: true,
+          expert: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      });
+
+      await tx.transaction.create({
+        data: {
+          bookingId: newBooking.id,
+          userId: payload.userId,
+          expertId: expertId,
+          amount: cost,
+          platformFee: platformFee,
+          expertAmount: expertAmount,
+          type: "payment",
+          status: "completed",
+        },
+      });
+
+      return newBooking;
     });
 
     return NextResponse.json(booking, { status: 201 });
@@ -167,17 +205,14 @@ export async function GET(request: Request) {
     const payload = await verifyAuth();
 
     if (!payload) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
 
     const whereClause: any = {
-      userId: payload.userId
+      userId: payload.userId,
     };
 
     if (status) {
@@ -190,13 +225,13 @@ export async function GET(request: Request) {
       include: {
         expert: {
           include: {
-            user: true
-          }
-        }
+            user: true,
+          },
+        },
       },
       orderBy: {
-        slotStart: "asc"
-      }
+        slotStart: "asc",
+      },
     });
 
     return NextResponse.json(bookings);

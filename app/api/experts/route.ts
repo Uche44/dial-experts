@@ -1,20 +1,20 @@
-import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
     // Fetch all approved experts with their user details
     const experts = await prisma.expertProfile.findMany({
       where: {
-        status: "pending"
+        status: "approved",
       },
       include: {
-        user: true
+        user: true,
       },
       orderBy: {
-        createdAt: "desc"
-      }
-    })
+        createdAt: "desc",
+      },
+    });
 
     // Transform the data to match the Expert type structure
     const transformedExperts = experts.map((expert: any) => ({
@@ -27,7 +27,7 @@ export async function GET() {
         walletAddress: expert.user.walletAddress,
         role: expert.user.role,
         createdAt: expert.user.createdAt,
-        avatar: expert.user.avatar
+        avatar: expert.user.avatar,
       },
       field: expert.field,
       ratePerMin: expert.ratePerMin,
@@ -38,15 +38,15 @@ export async function GET() {
       rating: 0,
       totalReviews: 0,
       completedCalls: 0,
-      totalEarnings: 0
-    }))
+      totalEarnings: 0,
+    }));
 
-    return NextResponse.json(transformedExperts)
+    return NextResponse.json(transformedExperts);
   } catch (error) {
-    console.error("Error fetching experts:", error)
+    console.error("Error fetching experts:", error);
     return NextResponse.json(
       { error: "Failed to fetch experts" },
       { status: 500 }
-    )
+    );
   }
 }
