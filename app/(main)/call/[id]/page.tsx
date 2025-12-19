@@ -3,8 +3,11 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+
+import { LiveVideo } from "@/components/call/live-video";
+import { useAuth } from "@/lib/auth-context";
+import { useStream } from "@/hooks/use-stream";
 import {
   Dialog,
   DialogContent,
@@ -14,20 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Video,
-  VideoOff,
-  Mic,
-  MicOff,
-  PhoneOff,
-  Monitor,
-  MessageSquare,
-  Clock,
-  Star,
-} from "lucide-react";
-
-import { useToast } from "@/hooks/use-toast";
-import { PaymentCaptureModal } from "@/components/payment/payment-capture-modal";
+import { Star, Loader2, Wallet, Lock } from "lucide-react";
 
 export default function CallPage({
   params,
@@ -37,21 +27,18 @@ export default function CallPage({
   const { id } = use(params);
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { startStream, endStream, loading: streamLoading } = useStream();
 
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
-  const [isConnecting, setIsConnecting] = useState(true);
-  const [isConnected, setIsConnected] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isVideoOff, setIsVideoOff] = useState(false);
-  const [callDuration, setCallDuration] = useState(0);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
+  const [callDuration, setCallDuration] = useState(0);
 
-  const maxDuration = 20 * 60; // 20 minutes in seconds
+  // State to track if the stream (payment) has been initiated
+  const [streamActive, setStreamActive] = useState(false);
 
   useEffect(() => {
     const fetchBooking = async () => {
@@ -77,47 +64,75 @@ export default function CallPage({
     fetchBooking();
   }, [id, toast]);
 
+  // Simulation Timer
   useEffect(() => {
-    if (!booking) return;
+    let interval: NodeJS.Timeout;
+    if (streamActive) {
+      interval = setInterval(() => {
+        setCallDuration((prev) => {
+          // Auto-end after 60 seconds for simulation
+          if (prev >= 60) {
+            handleDisconnect();
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [streamActive]);
 
-    // Simulate connection
-    const connectTimer = setTimeout(() => {
-      setIsConnecting(false);
-      setIsConnected(true);
-    }, 2000);
+  const handleStartCall = async () => {
+    // alert(booking);
+    if (!booking || !booking.expert) return;
 
-    return () => clearTimeout(connectTimer);
-  }, [booking]);
+    try {
+      // SIMULATION: Bypass blockchain stream start
+      // const ratePerMin = booking.expert.ratePerMin || 1;
+      // const ratePerSecond = Math.ceil((ratePerMin / 60) * 1_000_000); // 6 decimals for USDC
+      // const maxAmount = booking.cost || 10;
+      // await startStream(booking.expert.walletAddress, maxAmount, ratePerSecond);
 
-  useEffect(() => {
-    if (!isConnected) return;
-
-    const timer = setInterval(() => {
-      setCallDuration((prev) => {
-        if (prev >= maxDuration) {
-          clearInterval(timer);
-          handleAutoDisconnect();
-          return maxDuration;
-        }
-        return prev + 1;
+      setStreamActive(true);
+      toast({
+        title: "Call Started (Simulation)",
+        description: "You are now connected.",
       });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [isConnected]);
-
-  const handleAutoDisconnect = () => {
-    setIsConnected(false);
-    setShowPaymentModal(true);
+    } catch (error) {
+      console.error("Failed to start stream:", error);
+      toast({
+        title: "Connection Failed",
+        description: "Could not start the call.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEndCall = () => {
-    setIsConnected(false);
-    setShowPaymentModal(true);
-  };
+  const handleDisconnect = async () => {
+    // End the stream on the blockchain
+    if (streamActive && booking) {
+      try {
+        // SIMULATION: Bypass blockchain settlement
+        // const expertAddress = booking.expert.walletAddress;
+        // const userAddress =
+        //   user?.role === "user"
+        //     ? user?.walletAddress
+        //     : booking.user?.walletAddress;
 
-  const handlePaymentComplete = () => {
-    setShowPaymentModal(false);
+        // if (expertAddress && userAddress) {
+        //   await endStream(expertAddress, userAddress);
+        // }
+
+        toast({
+          title: "Call Ended",
+          description: "Simulation complete.",
+        });
+      } catch (error) {
+        console.error("Error closing stream:", error);
+      }
+    }
+
+    setStreamActive(false);
     setShowRatingModal(true);
   };
 
@@ -129,19 +144,11 @@ export default function CallPage({
     router.push("/dashboard");
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading call...</p>
         </div>
       </div>
@@ -161,151 +168,102 @@ export default function CallPage({
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Connecting State */}
-      {isConnecting && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
-              <Video className="w-12 h-12 text-primary" />
+  // Pre-call check for User
+  if (user?.role === "user" && !streamActive) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+        <div className="max-w-md w-full space-y-8 text-center">
+          <div>
+            <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary/10">
+              <Lock className="h-6 w-6 text-primary" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Connecting...</h2>
-            <p className="text-muted-foreground">
-              Setting up secure connection with {booking.expert?.user.name}
+            <h2 className="mt-6 text-3xl font-extrabold text-foreground">
+              Secure Payment
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              To start the call with {booking.expert?.user.name}, please escrow
+              the estimated cost. Unused funds will be refunded instantly after
+              the call.
             </p>
           </div>
-        </div>
-      )}
 
-      {/* Call Interface */}
-      {isConnected && (
-        <div className="flex-1 flex flex-col">
-          {/* Main Video Area */}
-          <div className="flex-1 relative bg-black/90 flex items-center justify-center">
-            {/* Remote Video (Expert) */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <Avatar className="w-32 h-32 mx-auto mb-4 border-4 border-primary/30">
-                  <AvatarImage
-                    src={booking.expert?.user.avatar || "/placeholder.svg"}
-                  />
-                  <AvatarFallback className="text-3xl bg-primary text-primary-foreground">
-                    {booking.expert?.user.name
-                      .split(" ")
-                      .map((n: string) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <h2 className="text-xl font-semibold text-foreground">
-                  {booking.expert?.user.name}
-                </h2>
-                <p className="text-muted-foreground">{booking.expert?.field}</p>
-              </div>
+          <div className="bg-card p-6 rounded-lg border border-border shadow-sm">
+            <div className="flex justify-between mb-4">
+              <span className="text-muted-foreground">Rate</span>
+              <span className="font-medium">
+                ${booking.expert?.ratePerMin}/min
+              </span>
+            </div>
+            <div className="flex justify-between mb-6">
+              <span className="text-muted-foreground">Est. Max Cost</span>
+              <span className="font-bold text-lg">${booking.cost}</span>
             </div>
 
-            {/* Local Video (User) - Picture in Picture */}
-            <div className="absolute bottom-4 right-4 w-48 h-36 bg-card rounded-lg border border-border/50 flex items-center justify-center">
-              {isVideoOff ? (
-                <VideoOff className="w-8 h-8 text-muted-foreground" />
+            <Button
+              onClick={handleStartCall}
+              className="w-full flex items-center justify-center gap-2"
+              size="lg"
+              disabled={streamLoading}
+            >
+              {streamLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <div className="text-center">
-                  <Avatar className="w-12 h-12 mx-auto">
-                    <AvatarFallback>You</AvatarFallback>
-                  </Avatar>
-                </div>
+                <Wallet className="w-4 h-4" />
               )}
-            </div>
-
-            {/* Call Timer */}
-            <Card className="absolute top-4 left-1/2 -translate-x-1/2 glass border-border/50">
-              <CardContent className="py-2 px-4 flex items-center gap-3">
-                <Clock className="w-4 h-4 text-primary" />
-                <span className="font-mono text-lg font-bold">
-                  {formatTime(callDuration)}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  / {formatTime(maxDuration)}
-                </span>
-              </CardContent>
-            </Card>
-
-            {/* Time Warning */}
-            {callDuration >= maxDuration - 60 && (
-              <Card className="absolute top-16 left-1/2 -translate-x-1/2 bg-destructive/20 border-destructive/50">
-                <CardContent className="py-2 px-4 text-sm text-destructive-foreground">
-                  Call ending in {maxDuration - callDuration} seconds
-                </CardContent>
-              </Card>
-            )}
+              {streamLoading ? "Processing..." : "Start Call (Simulation)"}
+            </Button>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Powered by Solana Smart Contracts
+            </p>
           </div>
 
-          {/* Controls */}
-          <div className="p-4 bg-card border-t border-border/50">
-            <div className="max-w-lg mx-auto flex items-center justify-center gap-4">
-              <Button
-                variant="outline"
-                size="lg"
-                className={`rounded-full w-14 h-14 ${
-                  isMuted ? "bg-destructive/20 border-destructive" : ""
-                }`}
-                onClick={() => setIsMuted(!isMuted)}
-              >
-                {isMuted ? (
-                  <MicOff className="w-6 h-6" />
-                ) : (
-                  <Mic className="w-6 h-6" />
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className={`rounded-full w-14 h-14 ${
-                  isVideoOff ? "bg-destructive/20 border-destructive" : ""
-                }`}
-                onClick={() => setIsVideoOff(!isVideoOff)}
-              >
-                {isVideoOff ? (
-                  <VideoOff className="w-6 h-6" />
-                ) : (
-                  <Video className="w-6 h-6" />
-                )}
-              </Button>
-              <Button
-                size="lg"
-                className="rounded-full w-16 h-16 bg-destructive hover:bg-destructive/90"
-                onClick={handleEndCall}
-              >
-                <PhoneOff className="w-7 h-7" />
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="rounded-full w-14 h-14 bg-transparent"
-              >
-                <Monitor className="w-6 h-6" />
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="rounded-full w-14 h-14 bg-transparent"
-              >
-                <MessageSquare className="w-6 h-6" />
-              </Button>
-            </div>
-          </div>
+          <Button variant="ghost" onClick={() => router.push("/dashboard")}>
+            Cancel
+          </Button>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      <PaymentCaptureModal
-        open={showPaymentModal}
-        onOpenChange={setShowPaymentModal}
-        expertName={booking.expert?.user.name || "Expert"}
-        expertRate={booking.expert?.ratePerMin || 0}
-        callDuration={callDuration}
-        maxAuthorized={booking.cost || 0}
-        onComplete={handlePaymentComplete}
-      />
+  // Waiting screen for Expert (optional, could just let them join)
+  if (user?.role === "expert" && !streamActive) {
+    // For this MVP, we might want to let the expert join and wait,
+    // or force them to wait until user starts.
+    // Let's provide a "Join" button that just sets streamActive to true locally
+    // assuming they verified off-band or we add a check later.
+    // Or better, just show the video and let them wait in the lobby.
+    // But to keep it consistent with "User initiates", let's show a prompt.
+
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Ready to Join?</h2>
+          <p className="text-muted-foreground mb-6">
+            Ensure the client has initiated the call.
+          </p>
+          <Button onClick={() => setStreamActive(true)} size="lg">
+            Join Call
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-screen bg-background flex flex-col">
+      <div className="flex-1 relative">
+        <LiveVideo
+          room={id}
+          username={user?.name || "Guest"}
+          onDisconnected={handleDisconnect}
+        />
+        {streamActive && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full backdrop-blur-sm">
+            Simulation Time: {Math.floor(callDuration / 60)}:
+            {(callDuration % 60).toString().padStart(2, "0")} / 01:00
+          </div>
+        )}
+      </div>
 
       {/* Rating Modal */}
       <Dialog open={showRatingModal} onOpenChange={setShowRatingModal}>

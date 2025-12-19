@@ -30,7 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 // import { WalletConnectModal } from "@/components/payment/wallet-connect-modal"
 // import { PreAuthModal } from "@/components/payment/pre-auth-modal"
 import type { Expert } from "@/lib/types";
-import { useAppKit } from "@reown/appkit/react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 const timeSlots = Array.from({ length: 48 }, (_, i) => {
   const hour = Math.floor(i / 2)
@@ -50,7 +50,7 @@ export default function ExpertProfilePage({
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
-  const { open } = useAppKit();
+  const { setVisible } = useWalletModal();
 
   const [expert, setExpert] = useState<Expert | null>(null);
   const [loading, setLoading] = useState(true);

@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Wallet, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import SignupForm from "./auth/sign-up";
 import { useToast } from "@/hooks/use-toast";
 
 export function WalletConnectButton() {
-  const { open } = useAppKit();
-  const { address, isConnected } = useAppKitAccount();
+  const { publicKey, connected } = useWallet();
+  const address = publicKey?.toBase58();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -19,10 +20,10 @@ export function WalletConnectButton() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isConnected && address) {
+    if (connected && address) {
       checkWalletInDB(address);
     }
-  }, [isConnected, address]);
+  }, [connected, address]);
 
   const checkWalletInDB = async (wallet: string) => {
     setIsChecking(true);
@@ -52,7 +53,8 @@ export function WalletConnectButton() {
         });
 
         // Reload the page to trigger auth context refresh
-        window.location.href = loginData.user.role === "expert" ? "/expert" : "/dashboard";
+        window.location.href =
+          loginData.user.role === "expert" ? "/expert" : "/dashboard";
       } else {
         // New user - show signup modal
         setWalletAddress(wallet);
@@ -70,10 +72,6 @@ export function WalletConnectButton() {
     }
   };
 
-  const handleConnect = async () => {
-    await open();
-  };
-
   const handleSignupComplete = (role: string) => {
     setShowOnboarding(false);
     toast({
@@ -87,50 +85,34 @@ export function WalletConnectButton() {
     window.location.href = role === "expert" ? "/expert" : "/dashboard";
   };
 
-  if (isConnected && isChecking) {
+  if (connected && isChecking) {
     return (
-      <Button
-        disabled
-        className="gap-2"
-      >
+      <Button disabled className="gap-2">
         <Loader2 className="h-4 w-4 animate-spin" />
         Verifying...
       </Button>
     );
   }
 
-  if (isConnected && address) {
-    return (
-      <>
-        <Button
-          variant="outline"
-          className="gap-2 bg-primary hover:bg-primary/90 glow-primary"
-        >
-          <Wallet className="h-4 w-4" />
-          {address.slice(0, 4)}...{address.slice(-4)}
-        </Button>
-
-        {showOnboarding && walletAddress && (
-          <div className="fixed h-screen inset-0 z-999 flex items-center justify-center bg-black/50">
-            <SignupForm
-              isOpen={showOnboarding}
-              onClose={() => setShowOnboarding(false)}
-              walletAddress={walletAddress}
-              onComplete={handleSignupComplete}
-            />
-          </div>
-        )}
-      </>
-    );
-  }
-
+  // If connected and not checking, we show the standard button which handles disconnect/copy address
+  // But we also need to render the onboarding modal if needed
   return (
-    <Button
-      onClick={handleConnect}
-      className="gap-2"
-    >
-      <Wallet className="h-4 w-4" />
-      Connect Wallet
-    </Button>
+    <>
+      <WalletMultiButton />
+
+      {showOnboarding && walletAddress && (
+        <div className="fixed h-screen inset-0 z-[999] flex items-center justify-center bg-black/50">
+          <SignupForm
+            isOpen={showOnboarding}
+            onClose={() => setShowOnboarding(false)}
+            walletAddress={walletAddress}
+            onComplete={handleSignupComplete}
+          />
+        </div>
+      )}
+    </>
   );
 }
+
+// Let us start integrating live kit and make the video conferencing work.
+// This is the way it should work: user books a call with an expert, when the time comes the user initiates the call, and our smart contract is called to create a token streaming program with the necessary details (the expert cannot join if the user hasn't initiated the call yet, this way we prevent unnecessary charges on the user), when the expert joins

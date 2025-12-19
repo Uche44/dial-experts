@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-// import { SolanaLogo } from "./solana-logo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,16 +19,17 @@ import {
   BookOpen,
   Receipt,
 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import { useState } from "react";
 import { WalletConnectButton } from "./wallet-connect-button";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
-  const { open } = useAppKit();
-  const { address, isConnected } = useAppKitAccount();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+  const { publicKey, connected, disconnect } = useWallet();
+  console.log(publicKey, connected);
+
+  const address = publicKey?.toBase58();
 
   const getDashboardLink = () => {
     if (!user) return "/";
@@ -43,17 +43,12 @@ export function Navbar() {
     }
   };
 
- 
-
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2"
-          >
+          <Link href="/" className="flex items-center gap-2">
             {/* <SolanaLogo className="w-8 h-8" /> */}
             <span className="text-xl font-bold gradient-text">DialExperts</span>
           </Link>
@@ -104,10 +99,7 @@ export function Navbar() {
                     <span className="text-sm font-medium">{user.name}</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-56"
-                >
+                <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5">
                     <p className="text-sm font-medium">{user.name}</p>
                     <p className="text-xs text-muted-foreground">
@@ -164,7 +156,6 @@ export function Navbar() {
                 <WalletConnectButton />
               </>
             )}
-        
           </div>
 
           {/* Mobile menu button */}
@@ -239,14 +230,7 @@ export function Navbar() {
                 </>
               ) : (
                 <div className="flex flex-col gap-2 pt-4 border-t border-border/50">
-                  <Button
-                    onClick={() => open()}
-                    className="bg-primary hover:bg-primary/90 glow-primary"
-                  >
-                    {isConnected
-                      ? `Connected: ${address?.slice(0, 6)}...`
-                      : "Connect Wallet"}
-                  </Button>
+                  <WalletConnectButton />
                 </div>
               )}
             </div>
