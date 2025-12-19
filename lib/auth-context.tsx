@@ -9,10 +9,10 @@ import {
   useCallback,
 } from "react";
 import type { User } from "./types";
-import { useDisconnect } from "@reown/appkit/react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"; // Assuming useRouter is from next/navigation
+import { useWallet } from "@solana/wallet-adapter-react"; // Assuming useWallet is from solana wallet adapter
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   logout: () => Promise<void>;
@@ -25,7 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { disconnect } = useDisconnect();
+  const { disconnect, autoConnect } = useWallet();
   const router = useRouter();
 
   useEffect(() => {
@@ -49,14 +49,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
+      await disconnect();
       await fetch("/api/auth/logout", { method: "POST" });
       setUser(null);
-      await disconnect();
       router.push(window.origin ? window.origin : "/");
     } catch (error) {
       console.error("Logout error:", error);
     }
-  }, []);
+  }, [disconnect, router]);
 
   return (
     <AuthContext.Provider
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");

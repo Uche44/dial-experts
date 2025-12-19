@@ -5,8 +5,8 @@ import { Analytics } from "@vercel/analytics/next";
 import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
-import { AppKitProvider } from "@/context/appkit-provider";
 import ExpertsProvider from "@/context/experts-context";
+import AppWalletProvider from "@/providers/wallet";
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -14,8 +14,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "DialExperts - Web3 Expert Consultation Platform",
   description:
-    "Connect with blockchain experts instantly. Pay only for what you use with Solana delegate approvals.",
-  generator: "v0.app",
+    "Connect with experts instantly on Solana. Pay only for what you use with Solana delegate approvals.",
 };
 
 export default function RootLayout({
@@ -24,19 +23,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className="dark"
-    >
+    <html lang="en" className="dark">
       <body className="font-sans antialiased min-h-screen">
-        <AuthProvider>
-         
-          <ExpertsProvider>
-            <AppKitProvider>{children}</AppKitProvider>
-             <Toaster />
-          </ExpertsProvider>
-         
-        </AuthProvider>
+        <AppWalletProvider>
+          <AuthProvider>
+            <ExpertsProvider>
+              {children}
+              <Toaster />
+            </ExpertsProvider>
+          </AuthProvider>
+        </AppWalletProvider>
         <Analytics />
       </body>
     </html>
